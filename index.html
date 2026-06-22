@@ -3,431 +3,456 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ресторан Систем — Удирдлагын хуудас</title>
+<title>Ресторан Систем — Удирдлага</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,sans-serif;background:#0d0d12;color:#fff;min-height:100vh}
+input,select,textarea{padding:.65rem .875rem;background:#1e1e2c;border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:.875rem;outline:none;width:100%;box-sizing:border-box}
+input:focus,select:focus{border-color:#F5C120} select option{background:#1e1e2c}
+.btn{padding:.55rem 1rem;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.82rem;display:inline-flex;align-items:center;gap:.3rem;transition:opacity .15s}
+.btn:hover{opacity:.82} .btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-orange{background:#E87B2F;color:#fff} .btn-green{background:#2ECC71;color:#fff}
+.btn-yellow{background:#F5C120;color:#000} .btn-red{background:rgba(231,76,60,.2);color:#E74C3C;border:1px solid rgba(231,76,60,.3)}
+.btn-gray{background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1)}
+.btn-sm{padding:.25rem .6rem;font-size:.72rem}
+/* Login */
 .login{display:flex;align-items:center;justify-content:center;min-height:100vh}
-.login-card{background:#1a1a22;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:2.5rem;width:360px;text-align:center}
-.login-card h1{color:#F5C120;margin-bottom:0.5rem;font-size:1.3rem}
-input,select,textarea{width:100%;padding:0.7rem 0.875rem;background:#1e1e2c;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:0.875rem;outline:none;margin-bottom:0.75rem;box-sizing:border-box}
-input:focus,select:focus{border-color:#F5C120}
-select option{background:#1e1e2c}
-.btn{padding:0.65rem 1.1rem;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.875rem;transition:opacity 0.15s;display:inline-flex;align-items:center;gap:0.35rem}
-.btn:hover{opacity:0.85} .btn:disabled{opacity:0.4;cursor:not-allowed}
-.btn-orange{background:#E87B2F;color:#fff}
-.btn-yellow{background:#F5C120;color:#000}
-.btn-green{background:#2ECC71;color:#fff}
-.btn-red{background:rgba(231,76,60,0.2);color:#E74C3C;border:1px solid rgba(231,76,60,0.3)}
-.btn-gray{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.1)}
-.btn-sm{padding:0.28rem 0.65rem;font-size:0.74rem}
-#app{display:none}
+.lcard{background:#1a1a22;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:2.5rem;width:360px;text-align:center}
+.lcard h1{color:#F5C120;font-size:1.3rem;margin-bottom:.25rem}
+/* Layout */
 .layout{display:flex;min-height:100vh}
-.sidebar{width:220px;background:#111117;border-right:1px solid rgba(255,255,255,0.08);padding:1.25rem 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
-.sidebar-title{padding:0 1rem 1rem;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:0.5rem}
-.sidebar-title h2{color:#F5C120;font-size:0.85rem;font-weight:800;letter-spacing:0.06em}
-.nav-btn{width:100%;padding:0.65rem 1rem;border:none;background:transparent;color:rgba(255,255,255,0.5);text-align:left;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;gap:0.6rem;border-left:3px solid transparent;transition:all 0.15s;font-weight:500}
-.nav-btn.active{background:rgba(232,123,47,0.18);color:#F5C120;font-weight:700;border-left-color:#E87B2F}
+.sidebar{width:220px;background:#111117;border-right:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.sidebar-head{padding:1.25rem 1rem;border-bottom:1px solid rgba(255,255,255,.08)}
+.sidebar-head h2{color:#F5C120;font-size:.85rem;font-weight:800;letter-spacing:.06em}
+.nav-btn{width:100%;padding:.65rem 1rem;border:none;background:transparent;color:rgba(255,255,255,.45);text-align:left;cursor:pointer;font-size:.82rem;display:flex;align-items:center;gap:.6rem;border-left:3px solid transparent;font-weight:500;transition:all .15s}
+.nav-btn.active{background:rgba(232,123,47,.18);color:#F5C120;font-weight:700;border-left-color:#E87B2F}
 .content{flex:1;padding:1.5rem;overflow-y:auto}
-.content-inner{max-width:960px;margin:0 auto}
-.card{background:#1a1a22;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:1.25rem;margin-bottom:1rem}
-.card-title{font-size:0.78rem;font-weight:700;color:#F5C120;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:1rem}
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:0.75rem;margin-bottom:1.25rem}
-.stat{background:#1a1a22;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:1rem;text-align:center}
-.stat .val{font-size:2rem;font-weight:900;line-height:1;margin-bottom:0.2rem}
-.stat .lbl{font-size:0.68rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.04em}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem}
-.full{grid-column:1/-1}
-label{font-size:0.7rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:0.2rem}
-table{width:100%;border-collapse:collapse;font-size:0.83rem}
-th{text-align:left;padding:0.5rem 0.75rem;color:rgba(255,255,255,0.35);font-size:0.7rem;letter-spacing:0.04em;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.08)}
-td{padding:0.6rem 0.75rem;border-bottom:1px solid rgba(255,255,255,0.05);vertical-align:middle}
-tr:hover td{background:rgba(255,255,255,0.025)}
-.badge{display:inline-block;padding:0.18rem 0.55rem;border-radius:20px;font-size:0.7rem;font-weight:700}
-.b-paid{background:rgba(46,204,113,0.15);color:#2ECC71}
-.b-trial{background:rgba(245,193,32,0.15);color:#F5C120}
-.b-blocked{background:rgba(231,76,60,0.15);color:#E74C3C}
-.b-expired{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.35)}
-.b-none{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3)}
-.key-code{font-family:monospace;font-size:0.78rem;background:rgba(245,193,32,0.1);color:#F5C120;padding:0.15rem 0.5rem;border-radius:4px;letter-spacing:0.04em}
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:100;padding:1rem}
-.modal{background:#1a1a22;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:1.5rem;width:100%;max-width:460px;max-height:90vh;overflow-y:auto}
+.inner{max-width:960px;margin:0 auto}
+/* Cards */
+.card{background:#1a1a22;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:1.25rem;margin-bottom:1rem}
+.ctitle{font-size:.78rem;font-weight:700;color:#F5C120;letter-spacing:.05em;text-transform:uppercase;margin-bottom:1rem}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:.75rem;margin-bottom:1.25rem}
+.stat{background:#1a1a22;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1rem;text-align:center}
+.stat .v{font-size:1.9rem;font-weight:900;line-height:1;margin-bottom:.2rem}
+.stat .l{font-size:.68rem;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.04em}
+/* Form grid */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.fg .full{grid-column:1/-1}
+label{font-size:.7rem;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.2rem;margin-top:.1rem}
+/* Table */
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th{text-align:left;padding:.5rem .75rem;color:rgba(255,255,255,.32);font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.08)}
+td{padding:.6rem .75rem;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle}
+/* Badges */
+.badge{display:inline-block;padding:.15rem .55rem;border-radius:20px;font-size:.7rem;font-weight:700}
+.b-paid{background:rgba(46,204,113,.15);color:#2ECC71}
+.b-trial{background:rgba(245,193,32,.15);color:#F5C120}
+.b-blocked{background:rgba(231,76,60,.15);color:#E74C3C}
+.b-expired{background:rgba(255,255,255,.06);color:rgba(255,255,255,.35)}
+.b-none{background:rgba(255,255,255,.05);color:rgba(255,255,255,.28)}
+.kcode{font-family:monospace;font-size:.78rem;background:rgba(245,193,32,.1);color:#F5C120;padding:.12rem .45rem;border-radius:4px;letter-spacing:.04em}
+/* Filter */
+.filters{display:flex;gap:.4rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+.fbtn{padding:.28rem .7rem;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.4);cursor:pointer;font-size:.76rem}
+.fbtn.on{border-color:#F5C120;background:rgba(245,193,32,.12);color:#F5C120;font-weight:700}
+/* Modal */
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:100;padding:1rem}
+.modal{background:#1a1a22;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:1.5rem;width:100%;max-width:460px;max-height:90vh;overflow-y:auto}
 .modal h3{color:#F5C120;margin-bottom:1.25rem;font-size:1rem}
-.modal-btns{display:flex;gap:0.6rem;margin-top:1rem}
-.warn-box{background:rgba(232,123,47,0.12);border:1px solid rgba(232,123,47,0.35);border-radius:8px;padding:0.65rem 0.875rem;margin-bottom:0.875rem;font-size:0.8rem;color:#E87B2F}
-.filters{display:flex;gap:0.4rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
-.filter-btn{padding:0.32rem 0.75rem;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.45);cursor:pointer;font-size:0.77rem;font-weight:500}
-.filter-btn.active{border-color:#F5C120;background:rgba(245,193,32,0.12);color:#F5C120;font-weight:700}
-.days-warn{color:#F5C120} .days-crit{color:#E74C3C} .days-ok{color:rgba(255,255,255,0.35)}
+.warn{background:rgba(232,123,47,.12);border:1px solid rgba(232,123,47,.35);border-radius:8px;padding:.65rem .875rem;margin-bottom:.875rem;font-size:.8rem;color:#E87B2F;line-height:1.5}
+.mbtns{display:flex;gap:.6rem;margin-top:1rem}
+.days-ok{color:rgba(255,255,255,.32)} .days-warn{color:#F5C120} .days-crit{color:#E74C3C}
+.err-box{background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);border-radius:8px;padding:.6rem .875rem;color:#E74C3C;font-size:.82rem;margin-bottom:.75rem}
 </style>
 </head>
 <body>
 
+<!-- LOGIN -->
 <div class="login" id="loginDiv">
-  <div class="login-card">
-    <div style="font-size:2.5rem;margin-bottom:0.75rem">🍽️</div>
+  <div class="lcard">
+    <div style="font-size:2.5rem;margin-bottom:.75rem">🍽️</div>
     <h1>РЕСТОРАН СИСТЕМ</h1>
-    <p style="color:rgba(255,255,255,0.45);font-size:0.82rem;margin-bottom:2rem">Удирдлагын хуудас</p>
-    <input type="password" id="adminPass" placeholder="Нууц үг" onkeydown="if(event.key==='Enter')doLogin()"/>
-    <button class="btn btn-orange" style="width:100%" onclick="doLogin()">Нэвтрэх</button>
-    <p id="loginErr" style="color:#E74C3C;font-size:0.82rem;margin-top:0.75rem;display:none">Нууц үг буруу</p>
+    <p style="color:rgba(255,255,255,.4);font-size:.82rem;margin:.25rem 0 1.75rem">Удирдлагын хуудас</p>
+    <input type="password" id="pw" placeholder="Нууц үг" style="margin-bottom:.75rem" onkeydown="if(event.key==='Enter')login()"/>
+    <button class="btn btn-orange" style="width:100%;justify-content:center;padding:.75rem" onclick="login()">Нэвтрэх</button>
+    <p id="perr" style="color:#E74C3C;font-size:.82rem;margin-top:.75rem;display:none">Нууц үг буруу</p>
   </div>
 </div>
 
+<!-- APP -->
 <div id="app" style="display:none">
-  <div class="layout">
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <div class="sidebar-title">
-        <h2>🍽️ РЕСТОРАН СИСТЕМ</h2>
-        <p style="color:rgba(255,255,255,0.35);font-size:0.7rem;margin-top:0.2rem">Удирдлагын хуудас</p>
-      </div>
-      <button class="nav-btn active" onclick="showTab('licenses',this)">🔑 Лицензүүд</button>
-      <button class="nav-btn" onclick="showTab('branches',this)">🏪 Салбарууд</button>
-      <div style="flex:1"></div>
-      <div style="padding:1rem">
-        <button class="btn btn-gray" style="width:100%;justify-content:center" onclick="location.reload()">↪ Гарах</button>
-      </div>
-    </div>
-
-    <!-- Content -->
-    <div class="content">
-      <div class="content-inner">
-
-        <!-- ── LICENSES TAB ── -->
-        <div id="tab-licenses">
-          <!-- Stats -->
-          <div class="stats">
-            <div class="stat"><div class="val" id="sTotal" style="color:#F5C120">—</div><div class="lbl">Нийт</div></div>
-            <div class="stat"><div class="val" id="sPaid" style="color:#2ECC71">—</div><div class="lbl">Төлсөн</div></div>
-            <div class="stat"><div class="val" id="sTrial" style="color:#F5C120">—</div><div class="lbl">Туршилт</div></div>
-            <div class="stat"><div class="val" id="sExpiring" style="color:#E87B2F">—</div><div class="lbl">7 хоногт дуусна</div></div>
-            <div class="stat"><div class="val" id="sBlocked" style="color:#E74C3C">—</div><div class="lbl">Хаагдсан/Дууссан</div></div>
-          </div>
-
-          <!-- New license form -->
-          <div class="card">
-            <div class="card-title">+ Шинэ лиценз үүсгэх</div>
-            <div class="form-grid">
-              <div><label>Ресторан/Салбарын нэр *</label><input id="fName" placeholder="Galbi-2 салбар"/></div>
-              <div><label>Эзэмшигчийн нэр</label><input id="fOwner" placeholder="Батболд"/></div>
-              <div><label>Утасны дугаар</label><input id="fPhone" placeholder="99001234" maxlength="8"/></div>
-              <div><label>Хугацаа</label>
-                <select id="fStatus" onchange="onStatusChange()">
-                  <option value="trial">🟡 Туршилт (14 хоног)</option>
-                  <option value="paid_1m">🟢 Төлсөн — 1 сар</option>
-                  <option value="paid_6m">🟢 Төлсөн — 6 сар</option>
-                  <option value="paid_1y">🟢 Төлсөн — 1 жил</option>
-                </select>
-              </div>
-              <div><label>Эхлэх огноо</label><input type="date" id="fStart" onchange="onStatusChange()"/></div>
-              <div><label>Дуусах огноо</label><input type="date" id="fEnd"/></div>
-              <div class="full"><label>Тэмдэглэл</label><input id="fNote" placeholder="Жишээ: Galbi 2-р салбар"/></div>
-            </div>
-            <div style="display:flex;gap:0.75rem;align-items:center;margin-top:0.25rem">
-              <button class="btn btn-orange" onclick="generateKey()">🔑 Лиценз үүсгэх</button>
-              <span id="newKeyDisplay" style="font-family:monospace;color:#F5C120;font-size:0.9rem;letter-spacing:0.06em;font-weight:700"></span>
-            </div>
-          </div>
-
-          <!-- License list -->
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-              <div class="card-title" style="margin:0">Бүх лицензүүд</div>
-            </div>
-            <div class="filters">
-              <button class="filter-btn active" onclick="setFilter('all',this)">Бүгд</button>
-              <button class="filter-btn" onclick="setFilter('paid',this)">🟢 Төлсөн</button>
-              <button class="filter-btn" onclick="setFilter('trial',this)">🟡 Туршилт</button>
-              <button class="filter-btn" onclick="setFilter('expiring',this)">🟠 7 хоногт дуусна</button>
-              <button class="filter-btn" onclick="setFilter('blocked',this)">⛔ Хаагдсан</button>
-              <button class="filter-btn" onclick="setFilter('expired',this)">🔴 Дууссан</button>
-              <input id="licSearch" placeholder="🔍 Хайх..." style="width:180px;margin-bottom:0;padding:0.32rem 0.65rem;font-size:0.77rem" oninput="renderLicenses()"/>
-            </div>
-            <div style="overflow-x:auto">
-              <table>
-                <thead><tr>
-                  <th>Түлхүүр</th><th>Ресторан/Салбар</th><th>Эзэмшигч</th><th>Статус</th><th>Дуусна</th><th>Холбоосон салбар</th><th>Үйлдэл</th>
-                </tr></thead>
-                <tbody id="licTable"><tr><td colspan="7" style="text-align:center;color:rgba(255,255,255,0.3);padding:2rem">Ачааллаж байна...</td></tr></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- ── BRANCHES TAB ── -->
-        <div id="tab-branches" style="display:none">
-          <div class="card">
-            <div class="card-title">🏪 Шинэ салбар үүсгэх</div>
-            <div style="background:rgba(46,204,113,0.08);border:1px solid rgba(46,204,113,0.25);border-radius:10px;padding:0.875rem 1rem;margin-bottom:1rem;font-size:0.82rem;line-height:1.6">
-  <b style="color:#2ECC71">✅ Зөв дараалал:</b><br>
-  <span style="color:rgba(255,255,255,0.7)">1️⃣ Энд <b>салбар үүсгэнэ</b> → 2️⃣ 🔑 Лицензүүд табаас <b>лиценз үүсгэнэ</b> → 3️⃣ <b>🔗 Холбох</b> дарна<br>
-  4️⃣ Менежерт линк + PIN өгнө → <b>res-menu-ashy-two.vercel.app</b> → лицензийн түлхүүр оруулна</span>
-</div>
-            <div class="form-grid">
-              <div class="full"><label>Салбарын нэр *</label><input id="bName" placeholder="Galbi-2"/></div>
-              <div class="full"><label>Хаяг</label><input id="bAddr" placeholder="Улаанбаатар, СБД ..."/></div>
-              <div><label>Менежерийн PIN * (4+ тоо)</label><input type="password" id="bPin" placeholder="••••"/></div>
-              <div><label>Ресторан нэр (заавал биш)</label><input id="bBrand" placeholder="Galbi ресторан"/></div>
-            </div>
-            <div style="display:flex;gap:0.75rem;align-items:center;margin-top:0.25rem">
-              <button class="btn btn-orange" onclick="createBranch()">🏪 Салбар үүсгэх</button>
-              <span id="newBranchId" style="font-size:0.8rem;color:rgba(255,255,255,0.4)"></span>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-title">Бүх салбарууд</div>
-            <div style="overflow-x:auto">
-              <table>
-                <thead><tr><th>Салбарын нэр</th><th>Branch ID</th><th>Хаяг</th><th>Лиценз статус</th><th>Үйлдэл</th></tr></thead>
-                <tbody id="branchTable"><tr><td colspan="5" style="text-align:center;color:rgba(255,255,255,0.3);padding:2rem">Ачааллаж байна...</td></tr></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
+ <div class="layout">
+  <!-- Sidebar -->
+  <div class="sidebar">
+   <div class="sidebar-head">
+     <h2>🍽️ РЕСТОРАН СИСТЕМ</h2>
+     <p style="color:rgba(255,255,255,.3);font-size:.7rem;margin-top:.2rem">Удирдлагын хуудас</p>
+   </div>
+   <button class="nav-btn active" onclick="switchTab('lic',this)">🔑 Лицензүүд</button>
+   <button class="nav-btn" onclick="switchTab('br',this)">🏪 Салбарууд</button>
+   <div style="flex:1"></div>
+   <div style="padding:1rem"><button class="btn btn-gray" style="width:100%;justify-content:center" onclick="location.reload()">↪ Гарах</button></div>
   </div>
+
+  <!-- Content -->
+  <div class="content">
+   <div class="inner">
+
+    <!-- ═══ LICENSES TAB ═══ -->
+    <div id="tab-lic">
+     <!-- Stats -->
+     <div class="stats">
+      <div class="stat"><div class="v" id="sAll" style="color:#F5C120">0</div><div class="l">Нийт</div></div>
+      <div class="stat"><div class="v" id="sPaid" style="color:#2ECC71">0</div><div class="l">Төлсөн</div></div>
+      <div class="stat"><div class="v" id="sTrial" style="color:#F5C120">0</div><div class="l">Туршилт</div></div>
+      <div class="stat"><div class="v" id="sExp7" style="color:#E87B2F">0</div><div class="l">7 хоногт дуусна</div></div>
+      <div class="stat"><div class="v" id="sBlk" style="color:#E74C3C">0</div><div class="l">Хаагдсан/Дууссан</div></div>
+     </div>
+     <!-- New license -->
+     <div class="card">
+      <div class="ctitle">+ Шинэ лиценз үүсгэх</div>
+      <div class="fg">
+       <div class="full"><label>Ресторан / Салбарын нэр *</label><input id="fName" placeholder="Galbi-2 салбар"/></div>
+       <div><label>Эзэмшигч</label><input id="fOwner" placeholder="Батболд"/></div>
+       <div><label>Утас</label><input id="fPhone" placeholder="99001234" maxlength="8"/></div>
+       <div><label>Хугацаа</label>
+        <select id="fDur" onchange="calcEnd()">
+         <option value="14">🟡 Туршилт — 14 хоног</option>
+         <option value="30">🟢 Төлсөн — 1 сар</option>
+         <option value="180">🟢 Төлсөн — 6 сар</option>
+         <option value="365">🟢 Төлсөн — 1 жил</option>
+        </select>
+       </div>
+       <div><label>Эхлэх огноо</label><input type="date" id="fStart" onchange="calcEnd()"/></div>
+       <div><label>Дуусах огноо (автомат)</label><input type="date" id="fEnd" readonly style="opacity:.6"/></div>
+       <div class="full"><label>Тэмдэглэл</label><input id="fNote" placeholder="Нэмэлт тайлбар..."/></div>
+      </div>
+      <div style="display:flex;gap:.75rem;align-items:center;margin-top:.5rem">
+       <button class="btn btn-orange" onclick="createLic()">🔑 Лиценз үүсгэх</button>
+       <span id="newKey" style="font-family:monospace;color:#F5C120;font-size:.9rem;font-weight:700;letter-spacing:.06em"></span>
+      </div>
+     </div>
+     <!-- License list -->
+     <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.875rem">
+       <div class="ctitle" style="margin:0">Бүх лицензүүд</div>
+      </div>
+      <div class="filters">
+       <button class="fbtn on" onclick="setF('all',this)">Бүгд</button>
+       <button class="fbtn" onclick="setF('paid',this)">🟢 Төлсөн</button>
+       <button class="fbtn" onclick="setF('trial',this)">🟡 Туршилт</button>
+       <button class="fbtn" onclick="setF('exp7',this)">🟠 Дуусж байна</button>
+       <button class="fbtn" onclick="setF('blocked',this)">⛔ Хаагдсан</button>
+       <button class="fbtn" onclick="setF('expired',this)">🔴 Дууссан</button>
+       <input id="lsearch" placeholder="🔍 Хайх..." style="width:170px;padding:.28rem .65rem;font-size:.76rem" oninput="renderLics()"/>
+      </div>
+      <div style="overflow-x:auto"><table>
+       <thead><tr><th>Түлхүүр</th><th>Нэр / Тэмдэглэл</th><th>Эзэмшигч</th><th>Статус</th><th>Дуусах</th><th>Холбоосон</th><th></th></tr></thead>
+       <tbody id="licTbl"></tbody>
+      </table></div>
+     </div>
+    </div>
+
+    <!-- ═══ BRANCHES TAB ═══ -->
+    <div id="tab-br" style="display:none">
+     <div class="card">
+      <div class="ctitle">🏪 Шинэ салбар үүсгэх</div>
+      <div style="background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2);border-radius:10px;padding:.875rem 1rem;margin-bottom:1rem;font-size:.82rem;line-height:1.6;color:rgba(255,255,255,.7)">
+       ✅ <b style="color:#2ECC71">Зөв дараалал:</b> 1) Энд салбар үүсгэ → 2) Лицензүүд табаас лиценз үүсгэ → 3) 🔗 Холбох → 4) Менежерт линк + лицензийн түлхүүр өг
+      </div>
+      <div class="fg">
+       <div class="full"><label>Салбарын нэр *</label><input id="bName" placeholder="Galbi-2"/></div>
+       <div class="full"><label>Хаяг</label><input id="bAddr" placeholder="Улаанбаатар, ..."/></div>
+       <div><label>Менежерийн PIN * (4+ тоо)</label><input type="password" id="bPin" placeholder="••••"/></div>
+       <div></div>
+      </div>
+      <div style="display:flex;gap:.75rem;align-items:center;margin-top:.25rem">
+       <button class="btn btn-orange" onclick="createBranch()">🏪 Салбар үүсгэх</button>
+       <span id="brMsg" style="font-size:.8rem"></span>
+      </div>
+     </div>
+     <div class="card">
+      <div class="ctitle">Бүх салбарууд</div>
+      <div style="overflow-x:auto"><table>
+       <thead><tr><th>Нэр</th><th>Branch ID</th><th>Хаяг</th><th>Лиценз</th><th>Линк</th></tr></thead>
+       <tbody id="brTbl"></tbody>
+      </table></div>
+     </div>
+    </div>
+
+   </div>
+  </div>
+ </div>
 </div>
 
 <!-- LINK MODAL -->
-<div class="modal-bg" id="linkModal" style="display:none" onclick="if(event.target===this)closeLink()">
-  <div class="modal">
-    <h3>🔗 Лицензийг салбартай холбох</h3>
-    <input type="hidden" id="linkKey"/>
-    <div style="background:rgba(245,193,32,0.1);border:1px solid rgba(245,193,32,0.25);border-radius:8px;padding:0.6rem 0.875rem;margin-bottom:1rem">
-      <span style="font-family:monospace;color:#F5C120;font-size:0.875rem;font-weight:700" id="linkKeyLabel"></span>
-    </div>
-    <div id="linkWarn" style="display:none" class="warn-box">⚠️ Анхаар! Сонгосон салбарт аль хэдийн лиценз холбоотой байна. Үргэлжлүүлбэл хуучин лиценз тасарна.</div>
-    <div style="margin-bottom:0.875rem">
-      <label>Салбар сонгох</label>
-      <select id="linkBranchSel" onchange="checkBranchHasLicense()"></select>
-      <p style="color:rgba(255,255,255,0.35);font-size:0.7rem;margin-top:0.3rem">💡 Жагсаалтад байхгүй бол эхлээд "Салбарууд" таб-аас үүсгэнэ үү</p>
-    </div>
-    <div class="modal-btns">
-      <button class="btn btn-gray" onclick="closeLink()">Болих</button>
-      <button class="btn btn-orange" onclick="doLink()" id="linkConfirmBtn">🔗 Холбох</button>
-    </div>
+<div class="mbg" id="linkMdl" style="display:none">
+ <div class="modal">
+  <h3>🔗 Лицензийг салбартай холбох</h3>
+  <div style="background:rgba(245,193,32,.1);border:1px solid rgba(245,193,32,.25);border-radius:8px;padding:.6rem .875rem;margin-bottom:1rem">
+   <span class="kcode" style="font-size:.9rem" id="mLicKey"></span>
+   <span style="color:rgba(255,255,255,.5);font-size:.8rem;margin-left:.5rem" id="mLicName"></span>
   </div>
+  <div id="mWarn" class="warn" style="display:none"></div>
+  <div id="mErrLnk" class="err-box" style="display:none"></div>
+  <label>Салбар сонгох</label>
+  <select id="brSel" style="margin-bottom:.875rem" onchange="onBrSelChange()"></select>
+  <p style="color:rgba(255,255,255,.3);font-size:.7rem;margin-bottom:1rem">💡 Жагсаалтад байхгүй бол "Салбарууд" табаас эхлээд үүсгэнэ үү</p>
+  <div class="mbtns">
+   <button class="btn btn-gray" onclick="closeLink()">Болих</button>
+   <button class="btn btn-orange" onclick="doLink()">🔗 Холбох</button>
+  </div>
+ </div>
 </div>
 
 <!-- EDIT MODAL -->
-<div class="modal-bg" id="editModal" style="display:none" onclick="if(event.target===this)closeEdit()">
-  <div class="modal">
-    <h3>✏️ Лиценз засах</h3>
-    <input type="hidden" id="eKey"/>
-    <div class="form-grid">
-      <div class="full"><label>Ресторан/Салбарын нэр</label><input id="eName"/></div>
-      <div><label>Эзэмшигч</label><input id="eOwner"/></div>
-      <div><label>Утас</label><input id="ePhone"/></div>
-      <div><label>Статус</label>
-        <select id="eStatus">
-          <option value="paid">🟢 Төлсөн</option>
-          <option value="trial">🟡 Туршилт</option>
-          <option value="blocked">⛔ Хаагдсан</option>
-          <option value="expired">🔴 Дууссан</option>
-        </select>
-      </div>
-      <div><label>Дуусах огноо</label><input type="date" id="eEnd"/></div>
-      <div class="full"><label>Тэмдэглэл</label><input id="eNote"/></div>
-    </div>
-    <div class="modal-btns">
-      <button class="btn btn-gray" onclick="closeEdit()">Болих</button>
-      <button class="btn btn-red" onclick="deleteLic()">🗑 Устгах</button>
-      <button class="btn btn-green" onclick="saveEdit()">💾 Хадгалах</button>
-    </div>
+<div class="mbg" id="editMdl" style="display:none">
+ <div class="modal">
+  <h3>✏️ Лиценз засах</h3>
+  <div id="mErrEdt" class="err-box" style="display:none"></div>
+  <div class="fg">
+   <div class="full"><label>Нэр</label><input id="eName"/></div>
+   <div><label>Эзэмшигч</label><input id="eOwner"/></div>
+   <div><label>Утас</label><input id="ePhone"/></div>
+   <div><label>Статус</label>
+    <select id="eSt">
+     <option value="paid">🟢 Төлсөн</option>
+     <option value="trial">🟡 Туршилт</option>
+     <option value="blocked">⛔ Хаагдсан</option>
+     <option value="expired">🔴 Дууссан</option>
+    </select>
+   </div>
+   <div><label>Дуусах огноо</label><input type="date" id="eEnd"/></div>
+   <div class="full"><label>Тэмдэглэл</label><input id="eNote"/></div>
   </div>
+  <div class="mbtns">
+   <button class="btn btn-gray" onclick="closeEdit()">Болих</button>
+   <button class="btn btn-red" onclick="delLic()">🗑 Устгах</button>
+   <button class="btn btn-green" onclick="saveEdit()">💾 Хадгалах</button>
+  </div>
+ </div>
 </div>
 
 <script>
-const ADMIN_PASS='Aquarius2026';
-const FB={apiKey:"AIzaSyCaMrXWbpZ2PWAz0n7Pg3BSfQlbWKmUIp0",databaseURL:"https://restaurant-system-6fb57-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"restaurant-system-6fb57"};
-let db,allLics=[],allBranches={},curFilter='all';
+/* ── CONFIG ─────────────────────────────── */
+const PASS='Aquarius2026';
+const FB={apiKey:'AIzaSyCaMrXWbpZ2PWAz0n7Pg3BSfQlbWKmUIp0',databaseURL:'https://restaurant-system-6fb57-default-rtdb.asia-southeast1.firebasedatabase.app',projectId:'restaurant-system-6fb57'};
 
-function doLogin(){
-  if(document.getElementById('adminPass').value!==ADMIN_PASS){document.getElementById('loginErr').style.display='block';return;}
+/* ── STATE ─────────────────────────────── */
+let db,lics=[],brs={},curF='all',curEditKey=null,curLinkKey=null;
+
+/* ── LOGIN ─────────────────────────────── */
+function login(){
+  if(document.getElementById('pw').value!==PASS){document.getElementById('perr').style.display='block';return;}
   document.getElementById('loginDiv').style.display='none';
-  document.getElementById('app').style.display='flex';
+  document.getElementById('app').style.display='block';
   if(!firebase.apps.length)firebase.initializeApp(FB);
   db=firebase.database();
-  const t=new Date().toISOString().slice(0,10);
-  document.getElementById('fStart').value=t;
-  onStatusChange();
-  db.ref('licenses').on('value',snap=>{allLics=[];if(snap.exists())snap.forEach(c=>allLics.push({key:c.key,...c.val()}));updateStats();renderLicenses();});
-  db.ref('branches').on('value',snap=>{allBranches={};if(snap.exists())snap.forEach(c=>{const v=c.val();allBranches[c.key]={id:c.key,name:v.info?.name||v.name||'',address:v.info?.address||v.address||'',licenseKey:v.licenseKey||null};});renderBranches();renderBranchOpts();});
+  initDate();
+  db.ref('licenses').on('value',s=>{lics=[];if(s.exists())s.forEach(c=>lics.push({key:c.key,...c.val()}));stats();renderLics();});
+  db.ref('branches').on('value',s=>{brs={};if(s.exists())s.forEach(c=>{const v=c.val();brs[c.key]={id:c.key,name:v.name||v.info?.name||'',addr:v.address||v.info?.address||'',lic:v.licenseKey||null};});renderBrs();fillBrSel();});
 }
 
-function showTab(t,btn){
-  ['licenses','branches'].forEach(id=>document.getElementById('tab-'+id).style.display='none');
+/* ── TABS ─────────────────────────────── */
+function switchTab(t,btn){
+  ['lic','br'].forEach(id=>{document.getElementById('tab-'+id).style.display='none';});
   document.getElementById('tab-'+t).style.display='block';
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
 }
 
-function onStatusChange(){
-  const s=document.getElementById('fStatus').value;
-  const start=new Date(document.getElementById('fStart').value||new Date());
-  const end=new Date(start);
-  if(s==='trial')end.setDate(end.getDate()+14);
-  else if(s==='paid_1m')end.setMonth(end.getMonth()+1);
-  else if(s==='paid_6m')end.setMonth(end.getMonth()+6);
-  else end.setFullYear(end.getFullYear()+1);
-  document.getElementById('fEnd').value=end.toISOString().slice(0,10);
+/* ── DATES ─────────────────────────────── */
+function initDate(){const t=new Date().toISOString().slice(0,10);document.getElementById('fStart').value=t;calcEnd();}
+function calcEnd(){
+  const days=parseInt(document.getElementById('fDur').value)||14;
+  const d=new Date(document.getElementById('fStart').value||new Date());
+  d.setDate(d.getDate()+days);
+  document.getElementById('fEnd').value=d.toISOString().slice(0,10);
 }
 
+/* ── KEY GEN ─────────────────────────────── */
 function genKey(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';const s=()=>Array.from({length:4},()=>c[Math.floor(Math.random()*c.length)]).join('');return`RES-${s()}-${s()}-${s()}`;}
 
-function generateKey(){
-  const name=document.getElementById('fName').value.trim();
-  if(!name){alert('Ресторан/Салбарын нэр оруулна уу');return;}
-  const key=genKey();
-  const st=document.getElementById('fStatus').value;
-  const lic={branchName:name,ownerName:document.getElementById('fOwner').value.trim()||'—',phone:document.getElementById('fPhone').value.trim()||'',status:st.startsWith('paid')?'paid':'trial',startDate:new Date(document.getElementById('fStart').value).getTime(),endDate:new Date(document.getElementById('fEnd').value).getTime(),createdAt:Date.now(),note:document.getElementById('fNote').value.trim()||''};
-  db.ref('licenses/'+key).set(lic).then(()=>{
-    const d=document.getElementById('newKeyDisplay');
-    d.textContent=key;
-    setTimeout(()=>d.textContent='',10000);
-    ['fName','fOwner','fPhone','fNote'].forEach(id=>document.getElementById(id).value='');
-    onStatusChange();
-  }).catch(e=>alert('Алдаа: '+e.message));
+/* ── STATUS HELPERS ─────────────────────── */
+function dl(e){return Math.ceil((e-Date.now())/86400000);}
+function effSt(l){
+  if(l.status==='blocked')return'blocked';
+  if(l.status==='expired'||dl(l.endDate)<=0)return'expired';
+  return l.status; // 'paid' or 'trial'
 }
 
-function daysLeft(e){return Math.ceil((e-Date.now())/86400000);}
-function effStatus(l){if(l.status==='blocked')return'blocked';if(l.status==='expired'||daysLeft(l.endDate)<=0)return'expired';return l.status;}
-
-function updateStats(){
-  let t=0,p=0,tr=0,ex=0,bl=0;
-  allLics.forEach(l=>{t++;const s=effStatus(l);if(s==='paid')p++;else if(s==='trial')tr++;if(s==='blocked'||s==='expired')bl++;if(s!=='blocked'&&s!=='expired'&&daysLeft(l.endDate)<=7&&daysLeft(l.endDate)>0)ex++;});
-  ['sTotal','sPaid','sTrial','sExpiring','sBlocked'].forEach((id,i)=>{document.getElementById(id).textContent=[t,p,tr,ex,bl][i];});
+/* ── STATS ─────────────────────────────── */
+function stats(){
+  let all=0,paid=0,trial=0,exp7=0,blk=0;
+  lics.forEach(l=>{all++;const s=effSt(l);if(s==='paid')paid++;else if(s==='trial')trial++;if(s==='blocked'||s==='expired')blk++;if(s!=='blocked'&&s!=='expired'&&dl(l.endDate)>0&&dl(l.endDate)<=7)exp7++;});
+  ['sAll','sPaid','sTrial','sExp7','sBlk'].forEach((id,i)=>document.getElementById(id).textContent=[all,paid,trial,exp7,blk][i]);
 }
 
-function setFilter(f,btn){curFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderLicenses();}
+/* ── FILTER ─────────────────────────────── */
+function setF(f,btn){curF=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderLics();}
 
-function renderLicenses(){
-  const q=(document.getElementById('licSearch')?.value||'').toLowerCase();
-  let list=allLics.filter(l=>{
-    const s=effStatus(l);
-    if(curFilter!=='all'){if(curFilter==='expiring'){const d=daysLeft(l.endDate);if(!(d>0&&d<=7&&s!=='blocked'))return false;}else if(s!==curFilter)return false;}
-    if(q){if(!(l.key+l.branchName+l.ownerName+l.phone+l.note).toLowerCase().includes(q))return false;}
+/* ── RENDER LICENSES ─────────────────────── */
+const sLabel={paid:'Төлсөн',trial:'Туршилт',blocked:'Хаагдсан',expired:'Дууссан'};
+const sCls={paid:'b-paid',trial:'b-trial',blocked:'b-blocked',expired:'b-expired'};
+
+function renderLics(){
+  const q=(document.getElementById('lsearch').value||'').toLowerCase();
+  const list=lics.filter(l=>{
+    const s=effSt(l);
+    if(curF==='all'){}
+    else if(curF==='exp7'){if(!(dl(l.endDate)>0&&dl(l.endDate)<=7&&s!=='blocked'))return false;}
+    else if(s!==curF)return false;
+    if(q&&!(l.key+l.branchName+l.ownerName+(l.note||'')).toLowerCase().includes(q))return false;
     return true;
   }).sort((a,b)=>b.createdAt-a.createdAt);
 
-  const tb=document.getElementById('licTable');
-  if(!list.length){tb.innerHTML=`<tr><td colspan="7" style="text-align:center;color:rgba(255,255,255,0.3);padding:2rem">Лиценз байхгүй</td></tr>`;return;}
-  const bBadge={paid:'b-paid',trial:'b-trial',blocked:'b-blocked',expired:'b-expired'};
-  const bLabel={paid:'Төлсөн',trial:'Туршилт',blocked:'Хаагдсан',expired:'Дууссан'};
+  const tb=document.getElementById('licTbl');
+  if(!list.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:rgba(255,255,255,.28);padding:2rem">Лиценз байхгүй</td></tr>';return;}
   tb.innerHTML=list.map(l=>{
-    const es=effStatus(l),dl=daysLeft(l.endDate);
-    const dlCls=dl<=3?'days-crit':dl<=7?'days-warn':'days-ok';
-    const linked=l.branchId?allBranches[l.branchId]:null;
+    const s=effSt(l),d=dl(l.endDate);
+    const dcls=d<=3?'days-crit':d<=7?'days-warn':'days-ok';
+    const linked=l.branchId&&brs[l.branchId];
+    const brName=linked?brs[l.branchId].name:'—';
     return`<tr>
-      <td><span class="key-code">${l.key}</span></td>
-      <td><b style="color:rgba(255,255,255,0.9)">${l.branchName}</b>${l.note?`<br><span style="font-size:0.68rem;color:rgba(255,255,255,0.3)">${l.note}</span>`:''}</td>
-      <td style="color:rgba(255,255,255,0.7)">${l.ownerName}${l.phone?`<br><span style="font-size:0.7rem;color:rgba(255,255,255,0.4)">${l.phone}</span>`:''}</td>
-      <td><span class="badge ${bBadge[es]}">${bLabel[es]}</span></td>
-      <td style="font-size:0.82rem">${new Date(l.endDate).toLocaleDateString('mn-MN')}${es!=='blocked'&&es!=='expired'?`<br><span class="${dlCls}">${dl>0?dl+' хоног':'Дуусчээ'}</span>`:''}</td>
-      <td>${linked?`<span style="color:#2ECC71;font-size:0.75rem">✓ ${linked.name||l.branchId.slice(0,12)+'...'}</span>`:`<button class="btn btn-orange btn-sm" onclick="openLink('${l.key}')">🔗 Холбох</button>`}</td>
-      <td><div style="display:flex;gap:0.3rem">
-        <button class="btn btn-yellow btn-sm" onclick="openEdit('${l.key}')">✏️</button>
-        ${es!=='blocked'?`<button class="btn btn-red btn-sm" onclick="quickBlock('${l.key}')">⛔</button>`:`<button class="btn btn-green btn-sm" onclick="quickUnblock('${l.key}')">✅</button>`}
-        <button class="btn btn-gray btn-sm" onclick="navigator.clipboard.writeText('${l.key}').then(()=>alert('Хуулагдлаа'))">📋</button>
-      </div></td>
-    </tr>`;
+<td><span class="kcode">${l.key}</span></td>
+<td><b style="color:rgba(255,255,255,.9)">${l.branchName}</b>${l.note?`<br><small style="color:rgba(255,255,255,.3)">${l.note}</small>`:''}</td>
+<td style="color:rgba(255,255,255,.65)">${l.ownerName||'—'}${l.phone?`<br><small style="color:rgba(255,255,255,.35)">${l.phone}</small>`:''}</td>
+<td><span class="badge ${sCls[s]}">${sLabel[s]}</span></td>
+<td><span style="font-size:.8rem">${new Date(l.endDate).toLocaleDateString('mn-MN')}</span>${s!=='blocked'&&s!=='expired'?`<br><small class="${dcls}">${d>0?d+' хоног':'Дуусчээ'}</small>`:''}</td>
+<td>${l.branchId?`<span style="color:#2ECC71;font-size:.78rem">✓ ${brName}</span>`:`<button class="btn btn-orange btn-sm" data-key="${l.key}" data-name="${l.branchName}" onclick="openLink(this)">🔗 Холбох</button>`}</td>
+<td><div style="display:flex;gap:.3rem">
+  <button class="btn btn-yellow btn-sm" data-key="${l.key}" onclick="openEdit(this)">✏️</button>
+  ${s!=='blocked'?`<button class="btn btn-red btn-sm" data-key="${l.key}" onclick="quickBlock(this)">⛔</button>`:`<button class="btn btn-green btn-sm" data-key="${l.key}" onclick="quickUnblock(this)">✅</button>`}
+  <button class="btn btn-gray btn-sm" data-key="${l.key}" onclick="copyKey(this)">📋</button>
+</div></td>
+</tr>`;
   }).join('');
 }
 
-function renderBranchOpts(){
-  const s=document.getElementById('linkBranchSel');if(!s)return;
-  s.innerHTML='<option value="">-- Салбар сонгоно уу --</option>';
-  Object.values(allBranches).forEach(b=>s.innerHTML+=`<option value="${b.id}">${b.name||b.id} (${b.id.slice(0,10)}...)</option>`);
+/* ── LINK MODAL ─────────────────────────── */
+function openLink(btn){
+  curLinkKey=btn.getAttribute('data-key');
+  const name=btn.getAttribute('data-name');
+  document.getElementById('mLicKey').textContent=curLinkKey;
+  document.getElementById('mLicName').textContent=name||'';
+  document.getElementById('mWarn').style.display='none';
+  document.getElementById('mErrLnk').style.display='none';
+  fillBrSel();
+  document.getElementById('linkMdl').style.display='flex';
+}
+function closeLink(){document.getElementById('linkMdl').style.display='none';curLinkKey=null;}
+
+function fillBrSel(){
+  const sel=document.getElementById('brSel');
+  if(!sel)return;
+  sel.innerHTML='<option value="">-- Салбар сонгоно уу --</option>';
+  Object.values(brs).forEach(b=>sel.innerHTML+=`<option value="${b.id}">${b.name||b.id} (${b.id.slice(0,10)}...)</option>`);
 }
 
-function renderBranches(){
-  const tb=document.getElementById('branchTable');
-  const brs=Object.values(allBranches);
-  if(!brs.length){tb.innerHTML=`<tr><td colspan="5" style="text-align:center;color:rgba(255,255,255,0.3);padding:2rem">Салбар байхгүй</td></tr>`;return;}
-  tb.innerHTML=brs.map(b=>{
-    const lic=b.licenseKey?allLics.find(l=>l.key===b.licenseKey):null;
-    const es=lic?effStatus(lic):null;
-    const bBadge={paid:'b-paid',trial:'b-trial',blocked:'b-blocked',expired:'b-expired'};
-    const bLabel={paid:'Төлсөн',trial:'Туршилт',blocked:'Хаагдсан',expired:'Дууссан'};
-    return`<tr>
-      <td><b style="color:rgba(255,255,255,0.9)">${b.name||'—'}</b></td>
-      <td><span style="font-family:monospace;font-size:0.75rem;color:rgba(255,255,255,0.45)">${b.id}</span></td>
-      <td style="color:rgba(255,255,255,0.5);font-size:0.8rem">${b.address||'—'}</td>
-      <td>${lic?`<span class="badge ${bBadge[es]}">${bLabel[es]}</span><br><span class="key-code" style="font-size:0.68rem">${b.licenseKey}</span>`:`<span class="badge b-none">Лицензгүй</span>`}</td>
-      <td><div style="display:flex;gap:0.3rem">
-        <a href="https://res-menu-ashy-two.vercel.app/?b=${b.id}" target="_blank" class="btn btn-gray btn-sm">🔗 Линк</a>
-      </div></td>
-    </tr>`;
-  }).join('');
-}
-
-function openLink(key){
-  document.getElementById('linkKey').value=key;
-  document.getElementById('linkKeyLabel').textContent=key;
-  document.getElementById('linkWarn').style.display='none';
-  renderBranchOpts();
-  document.getElementById('linkModal').style.display='flex';
-}
-function closeLink(){document.getElementById('linkModal').style.display='none';}
-
-function checkBranchHasLicense(){
-  const bid=document.getElementById('linkBranchSel').value;
-  const b=allBranches[bid];
-  const warn=document.getElementById('linkWarn');
-  if(b&&b.licenseKey){warn.style.display='block';warn.innerHTML=`⚠️ Анхаар! <b>${b.name}</b> салбарт аль хэдийн <span style="font-family:monospace;color:#F5C120">${b.licenseKey}</span> лиценз холбоотой байна. Үргэлжлүүлбэл тэр лиценз тасарна.`;}
-  else warn.style.display='none';
+function onBrSelChange(){
+  const bid=document.getElementById('brSel').value;
+  const warn=document.getElementById('mWarn');
+  const b=brs[bid];
+  if(b&&b.lic&&b.lic!==curLinkKey){
+    warn.style.display='block';
+    warn.textContent=`⚠️ "${b.name}" салбарт аль хэдийн ${b.lic} лиценз холбоотой. Үргэлжлүүлбэл тэр лиценз тасарна.`;
+  }else warn.style.display='none';
 }
 
 async function doLink(){
-  const key=document.getElementById('linkKey').value;
-  const bid=document.getElementById('linkBranchSel').value;
-  if(!bid){alert('Салбар сонгоно уу');return;}
-  const b=allBranches[bid];
-  if(b&&b.licenseKey&&b.licenseKey!==key){if(!confirm(`${b.name} салбарын хуучин лиценз (${b.licenseKey}) тасарна. Үргэлжлүүлэх үү?`))return;}
-  const updates={};
-  updates[`licenses/${key}/branchId`]=bid;
-  updates[`branches/${bid}/licenseKey`]=key;
-  // Remove old license link if exists
-  if(b&&b.licenseKey&&b.licenseKey!==key)updates[`licenses/${b.licenseKey}/branchId`]=null;
-  await db.ref().update(updates);
-  closeLink();
-  alert('✅ Амжилттай холбогдлоо!');
+  if(!curLinkKey){alert('Алдаа: Лицензийн түлхүүр байхгүй');return;}
+  const bid=document.getElementById('brSel').value;
+  const errEl=document.getElementById('mErrLnk');
+  errEl.style.display='none';
+  if(!bid){errEl.style.display='block';errEl.textContent='Салбар сонгоно уу!';return;}
+  const b=brs[bid];
+  if(b&&b.lic&&b.lic!==curLinkKey){
+    if(!confirm(`"${b.name}" салбарын хуучин лиценз (${b.lic}) тасарна. Үргэлжлүүлэх үү?`))return;
+  }
+  try{
+    const updates={};
+    updates[`licenses/${curLinkKey}/branchId`]=bid;
+    updates[`branches/${bid}/licenseKey`]=curLinkKey;
+    if(b&&b.lic&&b.lic!==curLinkKey)updates[`licenses/${b.lic}/branchId`]=null;
+    await db.ref().update(updates);
+    closeLink();
+  }catch(e){errEl.style.display='block';errEl.textContent='Алдаа: '+e.message;}
 }
 
-function openEdit(key){
-  const l=allLics.find(x=>x.key===key);if(!l)return;
-  document.getElementById('eKey').value=key;
-  document.getElementById('eName').value=l.branchName;
-  document.getElementById('eOwner').value=l.ownerName;
+/* ── EDIT MODAL ─────────────────────────── */
+function openEdit(btn){
+  curEditKey=btn.getAttribute('data-key');
+  const l=lics.find(x=>x.key===curEditKey);
+  if(!l)return;
+  document.getElementById('eName').value=l.branchName||'';
+  document.getElementById('eOwner').value=l.ownerName||'';
   document.getElementById('ePhone').value=l.phone||'';
-  document.getElementById('eStatus').value=l.status;
+  document.getElementById('eSt').value=l.status||'paid';
   document.getElementById('eEnd').value=new Date(l.endDate).toISOString().slice(0,10);
   document.getElementById('eNote').value=l.note||'';
-  document.getElementById('editModal').style.display='flex';
+  document.getElementById('mErrEdt').style.display='none';
+  document.getElementById('editMdl').style.display='flex';
 }
-function closeEdit(){document.getElementById('editModal').style.display='none';}
-function saveEdit(){
-  const k=document.getElementById('eKey').value;
-  db.ref('licenses/'+k).update({branchName:document.getElementById('eName').value,ownerName:document.getElementById('eOwner').value,phone:document.getElementById('ePhone').value,status:document.getElementById('eStatus').value,endDate:new Date(document.getElementById('eEnd').value).getTime(),note:document.getElementById('eNote').value}).then(()=>closeEdit());
+function closeEdit(){document.getElementById('editMdl').style.display='none';curEditKey=null;}
+async function saveEdit(){
+  if(!curEditKey)return;
+  try{
+    await db.ref('licenses/'+curEditKey).update({
+      branchName:document.getElementById('eName').value,
+      ownerName:document.getElementById('eOwner').value,
+      phone:document.getElementById('ePhone').value,
+      status:document.getElementById('eSt').value,
+      endDate:new Date(document.getElementById('eEnd').value).getTime(),
+      note:document.getElementById('eNote').value,
+    });
+    closeEdit();
+  }catch(e){const el=document.getElementById('mErrEdt');el.style.display='block';el.textContent='Алдаа: '+e.message;}
 }
-function deleteLic(){
-  const k=document.getElementById('eKey').value;
-  if(!confirm(`${k} лицензийг устгах уу?`))return;
-  db.ref('licenses/'+k).remove().then(()=>closeEdit());
+async function delLic(){
+  if(!curEditKey)return;
+  if(!confirm(`${curEditKey} лицензийг устгах уу?`))return;
+  await db.ref('licenses/'+curEditKey).remove();
+  closeEdit();
 }
-function quickBlock(k){if(!confirm('Хаах уу?'))return;db.ref('licenses/'+k).update({status:'blocked'});}
-function quickUnblock(k){db.ref('licenses/'+k).update({status:'paid'});}
 
-// Branch creation
+/* ── QUICK ACTIONS ─────────────────────── */
+function quickBlock(btn){const k=btn.getAttribute('data-key');if(!confirm('Хаах уу?'))return;db.ref('licenses/'+k).update({status:'blocked'});}
+function quickUnblock(btn){const k=btn.getAttribute('data-key');db.ref('licenses/'+k).update({status:'paid'});}
+function copyKey(btn){navigator.clipboard.writeText(btn.getAttribute('data-key')).then(()=>alert('Хуулагдлаа ✓'));}
+
+/* ── CREATE LICENSE ─────────────────────── */
+function createLic(){
+  const name=document.getElementById('fName').value.trim();
+  if(!name){alert('Нэр оруулна уу');return;}
+  const dur=parseInt(document.getElementById('fDur').value)||14;
+  const key=genKey();
+  const startDate=new Date(document.getElementById('fStart').value).getTime();
+  const endDate=new Date(document.getElementById('fEnd').value).getTime();
+  db.ref('licenses/'+key).set({
+    branchName:name,
+    ownerName:document.getElementById('fOwner').value.trim()||'—',
+    phone:document.getElementById('fPhone').value.trim()||'',
+    status:dur<=14?'trial':'paid',
+    startDate,endDate,
+    createdAt:Date.now(),
+    note:document.getElementById('fNote').value.trim()||'',
+  }).then(()=>{
+    const el=document.getElementById('newKey');
+    el.textContent=key;
+    setTimeout(()=>el.textContent='',12000);
+    ['fName','fOwner','fPhone','fNote'].forEach(id=>document.getElementById(id).value='');
+    initDate();
+  }).catch(e=>alert('Алдаа: '+e.message));
+}
+
+/* ── CREATE BRANCH ─────────────────────── */
 const SEED_MENU=[
-  {name:'Цуйван',description:'Гурилтай шарсан мах, хүнсний ногоо',price:12000,category:'Үндсэн хоол',image:'',available:true,allergens:'Гурил'},
-  {name:'Хуушуур',description:'4 ширхэг шарсан гурилтай мах',price:8000,category:'Үндсэн хоол',image:'',available:true,allergens:'Гурил'},
-  {name:'Банштай шөл',description:'Уламжлалт банш, чанасан мах',price:9000,category:'Шөл',image:'',available:true,allergens:'Мах'},
+  {name:'Цуйван',description:'Гурилтай шарсан мах',price:12000,category:'Үндсэн хоол',image:'',available:true,allergens:'Гурил'},
+  {name:'Хуушуур',description:'4 ширхэг шарсан',price:8000,category:'Үндсэн хоол',image:'',available:true,allergens:'Гурил'},
+  {name:'Банштай шөл',description:'Уламжлалт банш',price:9000,category:'Шөл',image:'',available:true,allergens:''},
   {name:'Кофе',description:'Хос эспрессо',price:4500,category:'Ундаа',image:'',available:true,allergens:''},
 ];
 const SEED_CATS=['Үндсэн хоол','Шөл','Ундаа'];
@@ -436,45 +461,52 @@ async function createBranch(){
   const name=document.getElementById('bName').value.trim();
   const pin=document.getElementById('bPin').value.trim();
   const addr=document.getElementById('bAddr').value.trim();
-  if(!name||!pin||pin.length<4){alert('Нэр болон 4+ оронтой PIN шаардлагатай');return;}
-  const statusEl=document.getElementById('newBranchId');
-  statusEl.textContent='⏳ Үүсгэж байна...';
-  statusEl.style.color='rgba(255,255,255,0.5)';
+  const msg=document.getElementById('brMsg');
+  if(!name||!pin||pin.length<4){msg.style.color='#E74C3C';msg.textContent='Нэр болон 4+ оронтой PIN шаардлагатай';return;}
+  msg.style.color='rgba(255,255,255,.5)';msg.textContent='⏳ Үүсгэж байна...';
   try{
-    // 1. Create branch
-    const bRef=db.ref('branches').push();
-    const id=bRef.key;
-    await bRef.set({name,managerPin:pin,address:addr||'',createdAt:Date.now()});
-    statusEl.textContent='✓ Салбар үүслээ...';
-
-    // 2. Seed menu items
-    for(const item of SEED_MENU){
-      await db.ref('branches/'+id+'/menu').push({...item,createdAt:Date.now()});
-    }
-    statusEl.textContent='✓ Цэс нэмэгдлээ...';
-
-    // 3. Seed categories
+    const ref=db.ref('branches').push();
+    const id=ref.key;
+    await ref.set({name,managerPin:pin,address:addr,createdAt:Date.now()});
+    msg.textContent='✓ Цэс нэмж байна...';
+    for(const item of SEED_MENU)await db.ref('branches/'+id+'/menu').push({...item,createdAt:Date.now()});
+    msg.textContent='✓ Ангилал нэмж байна...';
     let so=Date.now();
-    for(const cat of SEED_CATS){
-      await db.ref('branches/'+id+'/categories').push({name:cat,visible:true,sortOrder:so++});
-    }
-    statusEl.textContent='✓ Ангилал нэмэгдлээ...';
-
-    // 4. Create 5 tables
-    for(let t=1;t<=5;t++){
-      await db.ref('branches/'+id+'/tables').push({number:t,status:'available'});
-    }
-
-    statusEl.style.color='#2ECC71';
-    statusEl.innerHTML=`✅ <b>${name}</b> үүслээ! Branch ID: <span style="font-family:monospace;font-size:0.85em">${id}</span>`;
+    for(const cat of SEED_CATS)await db.ref('branches/'+id+'/categories').push({name:cat,visible:true,sortOrder:so++});
+    msg.textContent='✓ Ширээ үүсгэж байна...';
+    for(let t=1;t<=5;t++)await db.ref('branches/'+id+'/tables').push({number:t,status:'available'});
+    msg.style.color='#2ECC71';
+    msg.innerHTML=`✅ <b>${name}</b> амжилттай үүслээ!<br><small style="font-family:monospace;color:rgba(255,255,255,.4)">${id}</small>`;
     ['bName','bAddr','bPin'].forEach(el=>document.getElementById(el).value='');
-    setTimeout(()=>{statusEl.textContent='';statusEl.style.color='rgba(255,255,255,0.4)';},15000);
-  }catch(e){
-    statusEl.style.color='#E74C3C';
-    statusEl.textContent='❌ Алдаа: '+e.message;
-    console.error(e);
-  }
+    setTimeout(()=>{msg.textContent='';},15000);
+  }catch(e){msg.style.color='#E74C3C';msg.textContent='❌ Алдаа: '+e.message;}
 }
+
+/* ── RENDER BRANCHES ─────────────────────── */
+function renderBrs(){
+  const tb=document.getElementById('brTbl');
+  const list=Object.values(brs);
+  if(!list.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:rgba(255,255,255,.28);padding:2rem">Салбар байхгүй</td></tr>';return;}
+  tb.innerHTML=list.map(b=>{
+    const l=b.lic?lics.find(x=>x.key===b.lic):null;
+    const s=l?effSt(l):null;
+    return`<tr>
+<td><b style="color:rgba(255,255,255,.9)">${b.name||'—'}</b></td>
+<td><span style="font-family:monospace;font-size:.72rem;color:rgba(255,255,255,.35)">${b.id}</span></td>
+<td style="color:rgba(255,255,255,.5);font-size:.8rem">${b.addr||'—'}</td>
+<td>${l?`<span class="badge ${sCls[s]}">${sLabel[s]}</span><br><span class="kcode" style="font-size:.68rem">${b.lic}</span>`:'<span class="badge b-none">Лицензгүй</span>'}</td>
+<td><a href="https://res-menu-ashy-two.vercel.app/?ref=${b.id}" target="_blank" class="btn btn-gray btn-sm" style="text-decoration:none">🔗 Линк</a></td>
+</tr>`;
+  }).join('');
+}
+
+/* ── CLOSE MODALS ON BG CLICK ─────────────── */
+document.addEventListener('click',e=>{
+  if(e.target.classList.contains('mbg')){
+    document.querySelectorAll('.mbg').forEach(m=>m.style.display='none');
+    curLinkKey=null;curEditKey=null;
+  }
+});
 </script>
 </body>
 </html>
