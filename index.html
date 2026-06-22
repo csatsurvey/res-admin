@@ -161,7 +161,11 @@ tr:hover td{background:rgba(255,255,255,0.025)}
         <div id="tab-branches" style="display:none">
           <div class="card">
             <div class="card-title">🏪 Шинэ салбар үүсгэх</div>
-            <div class="warn-box">💡 Энд үүсгэсэн салбарт менежер <b>res-menu-ashy-two.vercel.app</b> хаягаар нэвтэрч, лицензийн түлхүүрээ оруулна</div>
+            <div style="background:rgba(46,204,113,0.08);border:1px solid rgba(46,204,113,0.25);border-radius:10px;padding:0.875rem 1rem;margin-bottom:1rem;font-size:0.82rem;line-height:1.6">
+  <b style="color:#2ECC71">✅ Зөв дараалал:</b><br>
+  <span style="color:rgba(255,255,255,0.7)">1️⃣ Энд <b>салбар үүсгэнэ</b> → 2️⃣ 🔑 Лицензүүд табаас <b>лиценз үүсгэнэ</b> → 3️⃣ <b>🔗 Холбох</b> дарна<br>
+  4️⃣ Менежерт линк + PIN өгнө → <b>res-menu-ashy-two.vercel.app</b> → лицензийн түлхүүр оруулна</span>
+</div>
             <div class="form-grid">
               <div class="full"><label>Салбарын нэр *</label><input id="bName" placeholder="Galbi-2"/></div>
               <div class="full"><label>Хаяг</label><input id="bAddr" placeholder="Улаанбаатар, СБД ..."/></div>
@@ -420,16 +424,56 @@ function quickBlock(k){if(!confirm('Хаах уу?'))return;db.ref('licenses/'+k
 function quickUnblock(k){db.ref('licenses/'+k).update({status:'paid'});}
 
 // Branch creation
+const SEED_MENU=[
+  {name:'Цуйван',description:'Гурилтай шарсан мах, хүнсний ногоо',price:12000,category:'Үндсэн хоол',image:'',available:true,allergens:'Гурил'},
+  {name:'Хуушуур',description:'4 ширхэг шарсан гурилтай мах',price:8000,category:'Үндсэн хоол',image:'',available:true,allergens:'Гурил'},
+  {name:'Банштай шөл',description:'Уламжлалт банш, чанасан мах',price:9000,category:'Шөл',image:'',available:true,allergens:'Мах'},
+  {name:'Кофе',description:'Хос эспрессо',price:4500,category:'Ундаа',image:'',available:true,allergens:''},
+];
+const SEED_CATS=['Үндсэн хоол','Шөл','Ундаа'];
+
 async function createBranch(){
   const name=document.getElementById('bName').value.trim();
   const pin=document.getElementById('bPin').value.trim();
+  const addr=document.getElementById('bAddr').value.trim();
   if(!name||!pin||pin.length<4){alert('Нэр болон 4+ оронтой PIN шаардлагатай');return;}
-  const ref=db.ref('branches').push();
-  const branchData={name,info:{name,address:document.getElementById('bAddr').value.trim()},managerPin:pin,createdAt:Date.now()};
-  await ref.set(branchData);
-  document.getElementById('newBranchId').textContent='✅ Branch ID: '+ref.key;
-  ['bName','bAddr','bPin','bBrand'].forEach(id=>document.getElementById(id).value='');
-  setTimeout(()=>document.getElementById('newBranchId').textContent='',10000);
+  const statusEl=document.getElementById('newBranchId');
+  statusEl.textContent='⏳ Үүсгэж байна...';
+  statusEl.style.color='rgba(255,255,255,0.5)';
+  try{
+    // 1. Create branch
+    const bRef=db.ref('branches').push();
+    const id=bRef.key;
+    await bRef.set({name,managerPin:pin,address:addr||'',createdAt:Date.now()});
+    statusEl.textContent='✓ Салбар үүслээ...';
+
+    // 2. Seed menu items
+    for(const item of SEED_MENU){
+      await db.ref('branches/'+id+'/menu').push({...item,createdAt:Date.now()});
+    }
+    statusEl.textContent='✓ Цэс нэмэгдлээ...';
+
+    // 3. Seed categories
+    let so=Date.now();
+    for(const cat of SEED_CATS){
+      await db.ref('branches/'+id+'/categories').push({name:cat,visible:true,sortOrder:so++});
+    }
+    statusEl.textContent='✓ Ангилал нэмэгдлээ...';
+
+    // 4. Create 5 tables
+    for(let t=1;t<=5;t++){
+      await db.ref('branches/'+id+'/tables').push({number:t,status:'available'});
+    }
+
+    statusEl.style.color='#2ECC71';
+    statusEl.innerHTML=`✅ <b>${name}</b> үүслээ! Branch ID: <span style="font-family:monospace;font-size:0.85em">${id}</span>`;
+    ['bName','bAddr','bPin'].forEach(el=>document.getElementById(el).value='');
+    setTimeout(()=>{statusEl.textContent='';statusEl.style.color='rgba(255,255,255,0.4)';},15000);
+  }catch(e){
+    statusEl.style.color='#E74C3C';
+    statusEl.textContent='❌ Алдаа: '+e.message;
+    console.error(e);
+  }
 }
 </script>
 </body>
