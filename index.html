@@ -253,6 +253,11 @@ function login(){
   db=firebase.database();
   initDate();
   db.ref('licenses').on('value',s=>{lics=[];if(s.exists())s.forEach(c=>lics.push({key:c.key,...c.val()}));stats();renderLics();});
+  // Test Firebase connection
+  db.ref('.info/connected').on('value',s=>{
+    if(s.val()===true)console.log('✅ Firebase connected');
+    else console.warn('⚠️ Firebase disconnected');
+  });
   db.ref('branches').on('value',s=>{brs={};if(s.exists())s.forEach(c=>{const v=c.val();brs[c.key]={id:c.key,name:v.name||v.info?.name||'',addr:v.address||v.info?.address||'',lic:v.licenseKey||null};});renderBrs();fillBrSel();});
 }
 
@@ -427,11 +432,16 @@ function copyKey(btn){navigator.clipboard.writeText(btn.getAttribute('data-key')
 function createLic(){
   const name=document.getElementById('fName').value.trim();
   if(!name){alert('Нэр оруулна уу');return;}
+  if(!db){alert('Firebase холбогдоогүй байна. Хуудсыг дахин ачааллана уу.');return;}
   const dur=parseInt(document.getElementById('fDur').value)||14;
   const key=genKey();
-  const startDate=new Date(document.getElementById('fStart').value).getTime();
-  const endDate=new Date(document.getElementById('fEnd').value).getTime();
-  db.ref('licenses/'+key).set({
+  const startStr=document.getElementById('fStart').value;
+  const endStr=document.getElementById('fEnd').value;
+  if(!startStr||!endStr){alert('Огноо оруулна уу');return;}
+  const startDate=new Date(startStr).getTime();
+  const endDate=new Date(endStr).getTime();
+  if(isNaN(startDate)||isNaN(endDate)){alert('Огноо буруу байна');return;}
+  const data={
     branchName:name,
     ownerName:document.getElementById('fOwner').value.trim()||'—',
     phone:document.getElementById('fPhone').value.trim()||'',
@@ -439,13 +449,20 @@ function createLic(){
     startDate,endDate,
     createdAt:Date.now(),
     note:document.getElementById('fNote').value.trim()||'',
-  }).then(()=>{
+  };
+  console.log('Creating license:', key, data);
+  db.ref('licenses/'+key).set(data).then(()=>{
+    console.log('License created OK:', key);
     const el=document.getElementById('newKey');
-    el.textContent=key;
-    setTimeout(()=>el.textContent='',12000);
+    el.textContent='✅ '+key;
+    el.style.color='#2ECC71';
+    setTimeout(()=>{el.textContent='';el.style.color='#F5C120';},15000);
     ['fName','fOwner','fPhone','fNote'].forEach(id=>document.getElementById(id).value='');
     initDate();
-  }).catch(e=>alert('Алдаа: '+e.message));
+  }).catch(e=>{
+    console.error('License create failed:', e);
+    alert('Firebase алдаа: '+e.message+'\n\nFirebase дүрэм зөвшөөрөхгүй байж болзошгүй.');
+  });
 }
 
 /* ── CREATE BRANCH ─────────────────────── */
