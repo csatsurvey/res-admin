@@ -612,6 +612,18 @@ async function doExtend(){
 }
 
 /* ════ QUICK ACTIONS ════════════════════════════════ */
+async function deleteBranch(bid,name){
+  if(!confirm('"'+name+'" салбарыг Firebase-с БҮРЭН устгах уу?\n\n⚠️ Цэс, захиалга, бүх мэдээлэл устана.'))return;
+  try{
+    await db.ref('branches/'+bid).remove();
+    // Also remove license link if exists
+    const lic=brs[bid]?.lic;
+    if(lic)await db.ref('licenses/'+lic+'/branchId').remove();
+    delete brs[bid];
+    renderBrs();fillBrSel();
+    showToast('🗑 '+name+' устгагдлаа');
+  }catch(e){alert('Устгах алдаа: '+e.message);}
+}
 function quickBlock(key){if(!confirm('Энэ байршлыг хаах уу?'))return;db.ref('licenses/'+key).update({status:'blocked'});}
 function quickDelete(key,name,btn){
   if(!confirm('"'+name+'" лицензийг устгах уу?\n\nЭнэ үйлдлийг буцааж болохгүй.'))return;
