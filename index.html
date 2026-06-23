@@ -316,13 +316,16 @@ function doLogin(){
 }
 function doLogout(){location.reload();}
 function manualRefresh(){
+  const btn=event.target;
+  btn.textContent='⏳';btn.disabled=true;
   db.ref('licenses').once('value',snap=>{
     rows=[];
     if(snap.exists())snap.forEach(c=>rows.push({key:c.key,...c.val()}));
     const cnt=document.getElementById('dbCount');
     if(cnt)cnt.textContent='Firebase: '+rows.length+' бичилт · '+new Date().toLocaleTimeString('mn-MN');
     updateStats();render();
-    alert('Firebase-с '+rows.length+' лиценз уншлаа.\n\nЖагсаалт: '+rows.map(r=>r.branchName).join(', ')||'Хоосон');
+    btn.textContent='🔄 Шинэчлэх';btn.disabled=false;
+    showToast('Firebase: '+rows.length+' байршил уншлаа');
   });
 }
 
