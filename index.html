@@ -139,6 +139,7 @@ td{padding:.6rem .75rem;border-bottom:1px solid rgba(255,255,255,.05);vertical-a
      <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.875rem">
        <div class="ctitle" style="margin:0">Бүх лицензүүд</div>
+       <button class="btn btn-gray btn-sm" onclick="refreshLics()" id="refreshBtn">🔄 Дахин ачаалах</button>
       </div>
       <div class="filters">
        <button class="fbtn on" onclick="setF('all',this)">Бүгд</button>
@@ -252,7 +253,13 @@ function login(){
   if(!firebase.apps.length)firebase.initializeApp(FB);
   db=firebase.database();
   initDate();
-  db.ref('licenses').on('value',s=>{lics=[];if(s.exists())s.forEach(c=>lics.push({key:c.key,...c.val()}));stats();renderLics();});
+  db.ref('licenses').on('value',s=>{
+    lics=[];
+    if(s.exists())s.forEach(c=>lics.push({key:c.key,...c.val()}));
+    console.log('Firebase listener fired:',lics.length,'licenses');
+    stats();
+    renderLics();
+  });
   // Test Firebase connection
   db.ref('.info/connected').on('value',s=>{
     if(s.val()===true)console.log('✅ Firebase connected');
@@ -298,6 +305,20 @@ function stats(){
 
 /* ── FILTER ─────────────────────────────── */
 function setF(f,btn){curF=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderLics();}
+
+/* ── MANUAL REFRESH ─────────────────────── */
+function refreshLics(){
+  const btn=document.getElementById('refreshBtn');
+  if(btn){btn.textContent='⏳...';btn.disabled=true;}
+  db.ref('licenses').once('value',s=>{
+    lics=[];
+    if(s.exists())s.forEach(c=>lics.push({key:c.key,...c.val()}));
+    stats();
+    renderLics();
+    if(btn){btn.textContent='🔄 Дахин ачаалах';btn.disabled=false;}
+    console.log('Manual refresh: ',lics.length,'licenses found');
+  });
+}
 
 /* ── RENDER LICENSES ─────────────────────── */
 const sLabel={paid:'Төлсөн',trial:'Туршилт',blocked:'Хаагдсан',expired:'Дууссан'};
