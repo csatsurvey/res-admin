@@ -437,7 +437,7 @@ async function createAll(){
     document.getElementById('successCard').style.display='block';
     document.getElementById('successCard').scrollIntoView({behavior:'smooth'});
     // Clear form
-    ['cName','cOwner','cPhone','cNote','cPin'].forEach(id=>document.getElementById(id).value='');
+    ['cName','cOwner','cPhone','cNote'].forEach(id=>document.getElementById(id).value='');
     initDate();
     // Add to local rows immediately
     rows.unshift({key,...licData});
