@@ -300,6 +300,14 @@ async function createAll(){
     el.title='Менежерт өгөх түлхүүр';
     setTimeout(()=>el.textContent='',20000);
     ['cName','cOwner','cPhone','cNote'].forEach(id=>document.getElementById(id).value='');
+    // Wait for Firebase to propagate, then refresh
+    setTimeout(()=>{
+      db.ref('licenses').once('value').then(snap=>{
+        rows=[];
+        if(snap.exists())snap.forEach(c=>rows.push({key:c.key,...c.val()}));
+        updateStats();render();
+      });
+    },1000);
     showToast('✅ '+name+' амжилттай үүслээ!');
   }catch(e){
     prog.style.display='none';
