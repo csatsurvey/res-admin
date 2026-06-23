@@ -612,6 +612,18 @@ async function doExtend(){
 }
 
 /* ════ QUICK ACTIONS ════════════════════════════════ */
+async function cleanupBranches(){
+  const noLic=Object.values(brs).filter(b=>!b.lic);
+  if(!noLic.length){showToast('Лицензгүй салбар байхгүй байна');return;}
+  const names=noLic.map(b=>b.name||b.id).join(', ');
+  if(!confirm('Дараах '+noLic.length+' салбарыг устгах уу?\n\n'+names))return;
+  let ok=0;
+  for(const b of noLic){
+    try{await db.ref('branches/'+b.id).remove();delete brs[b.id];ok++;}catch(e){console.error(e);}
+  }
+  renderBrs();fillBrSel();
+  showToast('✅ '+ok+' салбар устгагдлаа');
+}
 async function deleteBranch(bid,name){
   if(!confirm('"'+name+'" салбарыг Firebase-с БҮРЭН устгах уу?\n\n⚠️ Цэс, захиалга, бүх мэдээлэл устана.'))return;
   try{
