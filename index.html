@@ -188,7 +188,7 @@ tr:last-child td{border-bottom:none}
           <div style="font-size:.68rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem">Лицензийн түлхүүр (анх удаа оруулна)</div>
           <div style="display:flex;align-items:center;gap:.75rem">
             <span class="kcode" id="resKey" style="font-size:1rem;padding:.3rem .75rem"></span>
-            <button class="btn btn-gray btn-sm" onclick="copyResult()">📋 Хуулах</button>
+            <button class="btn btn-green" onclick="copyResult()" style="padding:.65rem 1.5rem;font-size:.9rem">📋 Мэдээлэл хуулах</button>
           </div>
         </div>
         <div>
@@ -390,8 +390,29 @@ async function createAll(){
   }
 }
 function copyResult(){
-  const txt=`Нэвтрэх сайт: ${APP_URL}\nЛицензийн түлхүүр: ${lastKey}\nPIN: ${lastPin}`;
-  navigator.clipboard.writeText(txt).then(()=>alert('✅ Мэдээлэл хуулагдлаа!\n\n'+txt));
+  const txt='Нэвтрэх сайт: '+APP_URL+'\nЛицензийн түлхүүр: '+lastKey+'\nPIN код: '+lastPin;
+  copyToClipboard(txt,'✅ Хуулагдлаа! Менежерт илгээнэ үү.');
+}
+function copyKey(key){
+  copyToClipboard(key,'Түлхүүр хуулагдлаа ✓');
+}
+function copyToClipboard(text,msg){
+  if(navigator.clipboard&&window.isSecureContext){
+    navigator.clipboard.writeText(text).then(()=>{showToast(msg);}).catch(()=>fallbackCopy(text,msg));
+  }else{fallbackCopy(text,msg);}
+}
+function fallbackCopy(text,msg){
+  const ta=document.createElement('textarea');
+  ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.focus();ta.select();
+  try{document.execCommand('copy');showToast(msg);}catch{alert('Гараар хуулна уу:\n'+text);}
+  document.body.removeChild(ta);
+}
+function showToast(msg){
+  let t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#2ECC71;color:#000;padding:.65rem 1.5rem;border-radius:20px;font-weight:700;font-size:.875rem;z-index:999;transition:opacity .3s';document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';
+  setTimeout(()=>{t.style.opacity='0';},2500);
 }
 
 /* ════ STATS ════════════════════════════════════════ */
