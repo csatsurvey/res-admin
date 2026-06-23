@@ -211,7 +211,13 @@ tr:last-child td{border-bottom:none}
           <input id="srch" placeholder="🔍 Хайх..." style="width:180px;padding:.35rem .7rem;font-size:.78rem" oninput="render()"/>
         </div>
       </div>
-      <div id="filterRow" style="display:flex;gap:.4rem;margin-bottom:.875rem;flex-wrap:wrap"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+        <div id="filterRow" style="display:flex;gap:.4rem;flex-wrap:wrap"></div>
+        <div style="display:flex;gap:.4rem;align-items:center">
+          <span id="dbCount" style="color:rgba(255,255,255,.3);font-size:.72rem"></span>
+          <button class="btn btn-gray btn-sm" onclick="manualRefresh()">🔄 Шинэчлэх</button>
+        </div>
+      </div>
       <div class="tbl-wrap">
         <table>
           <thead><tr>
@@ -305,11 +311,23 @@ function doLogin(){
   db.ref('licenses').on('value',snap=>{
     rows=[];
     if(snap.exists())snap.forEach(c=>rows.push({key:c.key,...c.val()}));
+    const cnt=document.getElementById('dbCount');
+    if(cnt)cnt.textContent='Firebase: '+rows.length+' бичилт';
     updateStats();
     render();
   });
 }
 function doLogout(){location.reload();}
+function manualRefresh(){
+  db.ref('licenses').once('value',snap=>{
+    rows=[];
+    if(snap.exists())snap.forEach(c=>rows.push({key:c.key,...c.val()}));
+    const cnt=document.getElementById('dbCount');
+    if(cnt)cnt.textContent='Firebase: '+rows.length+' бичилт · '+new Date().toLocaleTimeString('mn-MN');
+    updateStats();render();
+    alert('Firebase-с '+rows.length+' лиценз уншлаа.\n\nЖагсаалт: '+rows.map(r=>r.branchName).join(', ')||'Хоосон');
+  });
+}
 
 /* ════ DATE HELPERS ════════════════════════════════ */
 function initDate(){
