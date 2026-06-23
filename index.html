@@ -329,6 +329,30 @@ function dlog(msg,type=''){
 
 function doLogout(){location.reload();}
 
+// Direct REST test - bypasses SDK cache completely
+async function testFirebaseWrite(){
+  const testKey='_test_'+Date.now();
+  const url='https://restaurant-system-6fb57-default-rtdb.asia-southeast1.firebasedatabase.app/';
+  dlog('▶ REST API write test эхэллээ...','info');
+  try{
+    // Write via REST
+    const wr=await fetch(url+'_test_writes/'+testKey+'.json',{method:'PUT',body:JSON.stringify({val:'ok',ts:Date.now()}),headers:{'Content-Type':'application/json'}});
+    const wres=await wr.json();
+    dlog('REST write: '+JSON.stringify(wres)+(wr.ok?' ✓':' ✗'),'ok');
+    // Read via REST 
+    const rr=await fetch(url+'_test_writes/'+testKey+'.json');
+    const rres=await rr.json();
+    dlog('REST read back: '+JSON.stringify(rres),(rres&&rres.val==='ok'?'ok':'err'));
+    // Cleanup
+    await fetch(url+'_test_writes/'+testKey+'.json',{method:'DELETE'});
+    // Check licenses count via REST
+    const lr=await fetch(url+'licenses.json?shallow=true');
+    const lres=await lr.json();
+    const cnt=lres?Object.keys(lres).length:0;
+    dlog('REST /licenses/ count: '+cnt+' — '+JSON.stringify(Object.keys(lres||{})),'info');
+  }catch(e){dlog('REST алдаа: '+e.message,'err');}
+}
+
 function loadLicenses(){
   dlog('▶ Лицензүүд Firebase-с татаж байна...','info');
   db.ref('licenses').once('value').then(snap=>{
@@ -611,7 +635,7 @@ document.addEventListener('DOMContentLoaded',buildFilters);
 
 <div id="debugPanel" class="debug-panel">
   <div class="debug-hdr">
-    <span style="color:#E87B2F;font-weight:700;font-size:.75rem">🐛 DEBUG CONSOLE</span>
+    <span style="color:#E87B2F;font-weight:700;font-size:.75rem">🐛 DEBUG CONSOLE v4</span>
     <button onclick="document.getElementById('debugLog').innerHTML=''" style="background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.5);padding:.2rem .6rem;border-radius:4px;cursor:pointer;font-size:.72rem">Цэвэрлэх</button>
   </div>
   <div id="debugLog"></div>
