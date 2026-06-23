@@ -77,13 +77,6 @@ tr:last-child td{border-bottom:none}
 .modal-btns{display:flex;gap:.6rem;margin-top:1rem}
 /* Days colors */
 .d-ok{color:rgba(255,255,255,.35)} .d-warn{color:#F5C120} .d-crit{color:#E74C3C}
-
-.debug-panel{position:fixed;bottom:0;left:0;right:0;height:180px;background:#0a0a0f;border-top:2px solid #E87B2F;font-family:monospace;font-size:.72rem;overflow-y:auto;z-index:1000;padding:.5rem}
-.debug-panel .dlog{padding:.15rem .5rem;border-bottom:1px solid rgba(255,255,255,.04);color:rgba(255,255,255,.6)}
-.debug-panel .dlog.err{color:#E74C3C;background:rgba(231,76,60,.08)}
-.debug-panel .dlog.ok{color:#2ECC71}
-.debug-panel .dlog.info{color:#F5C120}
-.debug-hdr{background:#111;padding:.35rem .75rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.1);position:sticky;top:0}
 </style>
 </head>
 <body>
@@ -316,16 +309,7 @@ function doLogin(){
   loadLicenses();
 }
 
-function dlog(msg,type=''){
-  const el=document.getElementById('debugLog');
-  if(!el)return;
-  const d=document.createElement('div');
-  d.className='dlog '+type;
-  d.textContent=new Date().toLocaleTimeString('mn-MN')+' '+msg;
-  el.appendChild(d);
-  el.scrollTop=el.scrollHeight;
-  console.log(msg);
-}
+function dlog(msg,type=''){console.log(msg);}
 
 function doLogout(){location.reload();}
 
@@ -553,11 +537,12 @@ function render(){
 </td>
 <td>
   <div style="display:flex;gap:.3rem;flex-wrap:wrap">
-    <button class="btn btn-yellow btn-sm" onclick="openEdit('${r.key}')">✏️ Засах</button>
-    <button class="btn btn-gray btn-sm" onclick="openExtend('${r.key}')">⏳ Сунгах</button>
+    <button class="btn btn-yellow btn-sm" onclick="openEdit('${r.key}')">✏️</button>
+    <button class="btn btn-gray btn-sm" onclick="openExtend('${r.key}')">⏳</button>
     ${s!=='blocked'
-      ?`<button class="btn btn-red btn-sm" onclick="quickBlock('${r.key}')">⛔ Хаах</button>`
-      :`<button class="btn btn-green btn-sm" onclick="quickUnblock('${r.key}')">✅ Нээх</button>`}
+      ?`<button class="btn btn-red btn-sm" onclick="quickBlock('${r.key}')">⛔</button>`
+      :`<button class="btn btn-green btn-sm" onclick="quickUnblock('${r.key}')">✅</button>`}
+    <button class="btn btn-sm" onclick="quickDelete('${r.key}','${r.branchName.replace(/'/g,"\'")}',this)" style="background:rgba(231,76,60,.15);color:#E74C3C;border:1px solid rgba(231,76,60,.25)">🗑</button>
   </div>
 </td>
 </tr>`;
@@ -622,6 +607,15 @@ async function doExtend(){
 
 /* ════ QUICK ACTIONS ════════════════════════════════ */
 function quickBlock(key){if(!confirm('Энэ байршлыг хаах уу?'))return;db.ref('licenses/'+key).update({status:'blocked'});}
+function quickDelete(key,name,btn){
+  if(!confirm('"'+name+'" лицензийг устгах уу?\n\nЭнэ үйлдлийг буцааж болохгүй.'))return;
+  btn.disabled=true;btn.textContent='⏳';
+  db.ref('licenses/'+key).remove().then(()=>{
+    rows=rows.filter(r=>r.key!==key);
+    updateStats();render();
+    showToast('🗑 Устгагдлаа: '+name);
+  }).catch(e=>alert('Устгах алдаа: '+e.message));
+}
 function quickUnblock(key){db.ref('licenses/'+key).update({status:'paid'});}
 function copyKey(key){navigator.clipboard.writeText(key).then(()=>alert('Хуулагдлаа ✓\n'+key));}
 
