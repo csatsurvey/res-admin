@@ -77,6 +77,13 @@ tr:last-child td{border-bottom:none}
 .modal-btns{display:flex;gap:.6rem;margin-top:1rem}
 /* Days colors */
 .d-ok{color:rgba(255,255,255,.35)} .d-warn{color:#F5C120} .d-crit{color:#E74C3C}
+
+.debug-panel{position:fixed;bottom:0;left:0;right:0;height:180px;background:#0a0a0f;border-top:2px solid #E87B2F;font-family:monospace;font-size:.72rem;overflow-y:auto;z-index:1000;padding:.5rem}
+.debug-panel .dlog{padding:.15rem .5rem;border-bottom:1px solid rgba(255,255,255,.04);color:rgba(255,255,255,.6)}
+.debug-panel .dlog.err{color:#E74C3C;background:rgba(231,76,60,.08)}
+.debug-panel .dlog.ok{color:#2ECC71}
+.debug-panel .dlog.info{color:#F5C120}
+.debug-hdr{background:#111;padding:.35rem .75rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.1);position:sticky;top:0}
 </style>
 </head>
 <body>
@@ -303,9 +310,11 @@ function doLogin(){
   document.getElementById('app').style.display='block';
   if(!firebase.apps.length)firebase.initializeApp(FB);
   db=firebase.database();
+  dlog('✓ Firebase холбогдлоо: '+FB.databaseURL,'ok');
   initDate();
   // Listen to licenses (source of truth)
   db.ref('licenses').on('value',snap=>{
+    dlog('🔔 on(value) fired: '+(snap.numChildren())+' items','info');
     rows=[];
     if(snap.exists())snap.forEach(c=>rows.push({key:c.key,...c.val()}));
     const cnt=document.getElementById('dbCount');
@@ -314,6 +323,18 @@ function doLogin(){
     render();
   });
 }
+
+function dlog(msg,type=''){
+  const el=document.getElementById('debugLog');
+  if(!el)return;
+  const d=document.createElement('div');
+  d.className='dlog '+type;
+  d.textContent=new Date().toLocaleTimeString('mn-MN')+' '+msg;
+  el.appendChild(d);
+  el.scrollTop=el.scrollHeight;
+  console.log(msg);
+}
+
 function doLogout(){location.reload();}
 function manualRefresh(){
   const btn=event.target;
@@ -357,11 +378,15 @@ async function createAll(){
   const endStr=document.getElementById('cEnd').value;
   const dur=parseInt(document.getElementById('cDur').value)||14;
   prog.style.display='block';prog.textContent='⏳ 1/4 Байршил үүсгэж байна...';
+  dlog('▶ createAll эхэллээ: '+name,'info');
+  dlog('Firebase URL: '+db.app.options.databaseURL,'info');
   try{
     // 1. Create branch (no managerPin needed - license key auth)
     const bRef=db.ref('branches').push();
     const bid=bRef.key;
     await bRef.set({name,address:'',createdAt:Date.now()});
+    dlog('✓ Branch үүслээ: '+bid,'ok');
+    dlog('✓ Цэс нэмж байна...','ok');
     prog.textContent='⏳ 2/4 Цэс нэмж байна...';
     // 2. Seed menu + categories + tables
     for(const item of SEED_MENU)await db.ref(`branches/${bid}/menu`).push({...item,createdAt:Date.now()});
@@ -381,9 +406,12 @@ async function createAll(){
       createdAt:Date.now(),
       note:document.getElementById('cNote').value.trim()||'',
     };
+    dlog('▶ License бичиж байна: '+key,'info');
     await db.ref('licenses/'+key).set(licData);
-    // Verify write succeeded
+    dlog('✓ License set() дуусав','ok');
+    dlog('▶ Баталгаажуулж байна...','info');
     const verify=await db.ref('licenses/'+key).once('value');
+    dlog('Verify exists: '+verify.exists()+ ' val:'+JSON.stringify(verify.val()),'info');
     if(!verify.exists())throw new Error('Лиценз Firebase-д хадгалагдсангүй. Дахин оролдоно уу.');
     prog.textContent='⏳ 4/4 Холбож байна...';
     // 4. Link
@@ -402,6 +430,7 @@ async function createAll(){
     rows.unshift({key,...licData});
     updateStats();render();
   }catch(e){
+    dlog('❌ АЛДАА: '+e.message+' | '+e.stack,'err');
     prog.style.display='none';
     errEl.textContent='Алдаа гарлаа: '+e.message;
     errEl.style.display='block';
@@ -574,5 +603,14 @@ document.addEventListener('click',e=>{if(e.target.classList.contains('mbg'))e.ta
 /* ════ INIT FILTERS ════════════════════════════════ */
 document.addEventListener('DOMContentLoaded',buildFilters);
 </script>
+
+<div id="debugPanel" class="debug-panel">
+  <div class="debug-hdr">
+    <span style="color:#E87B2F;font-weight:700;font-size:.75rem">🐛 DEBUG CONSOLE</span>
+    <button onclick="document.getElementById('debugLog').innerHTML=''" style="background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.5);padding:.2rem .6rem;border-radius:4px;cursor:pointer;font-size:.72rem">Цэвэрлэх</button>
+  </div>
+  <div id="debugLog"></div>
+</div>
+<div style="height:190px"></div>
 </body>
 </html>
