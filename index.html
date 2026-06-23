@@ -5,153 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ресторан Систем — Удирдлага</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js">
-const MENU_TEMPLATES = {
-  harbin: [
-    {name:'Мажан',description:'Sesame paste · 芝麻酱',price:3000,category:'Дүрмэл',allergens:'Тунгалаг самар'},
-    {name:'Жууцай',description:'Chinese chive flower · 韭菜花',price:2000,category:'Дүрмэл',allergens:''},
-    {name:'Дарсан сармис',description:'Sugar-pickled garlic · 糖蒜',price:2000,category:'Дүрмэл',allergens:''},
-    {name:'Цуутай амтлагч',description:'Seafood Juice · 海鲜汁',price:2000,category:'Дүрмэл',allergens:'Далайн бүтээгдэхүүн'},
-    {name:'Улаан дупу',description:'Fermented bean curd · 酱豆腐',price:2000,category:'Дүрмэл',allergens:'Буурцаг'},
-    {name:'Яншуй',description:'Cilantro powder · 香菜末',price:2000,category:'Дүрмэл',allergens:''},
-    {name:'Ногоон сонгино',description:'Chopped scallions · 葱花',price:2000,category:'Дүрмэл',allergens:''},
-    {name:'Халуун чинжүү',description:'Wild pepper · 野山椒',price:2000,category:'Дүрмэл',allergens:''},
-    {name:'Халуун тос',description:'Chili oil · 辣椒油',price:2000,category:'Дүрмэл',allergens:''},
-    {name:'Сармис',description:'Minced garlic · 蒜末',price:2000,category:'Дүрмэл',allergens:''},
-  ],
-  mongolian: [
-    {name:'Цуйван',description:'Гурилтай шарсан мах, хүнсний ногоо',price:12000,category:'Үндсэн хоол',allergens:'Гурил'},
-    {name:'Хуушуур',description:'4 ширхэг шарсан гурилтай мах',price:8000,category:'Үндсэн хоол',allergens:'Гурил'},
-    {name:'Банштай шөл',description:'Уламжлалт банш, чанасан мах',price:9000,category:'Шөл',allergens:'Мах'},
-    {name:'Кофе',description:'Хос эспрессо',price:4500,category:'Ундаа',allergens:''},
-  ],
-  empty: []
-};
-
-function fillMenuBranchSel(){
-  const sel=document.getElementById('menuBranchSel');
-  if(!sel)return;
-  sel.innerHTML='<option value="">-- Байршил сонгоно уу --</option>';
-  Object.values(brs).forEach(b=>sel.innerHTML+=`<option value="${b.id}">${b.name||b.id}</option>`);
-}
-
-function loadTemplate(){
-  const tmpl=document.getElementById('menuTemplate').value;
-  const items=MENU_TEMPLATES[tmpl]||[];
-  const prev=document.getElementById('menuPreview');
-  if(!items.length){prev.innerHTML='<p style="color:rgba(255,255,255,.4);font-size:.8rem;text-align:center">Хоосон — менежер нэвтэрсний дараа гараар нэмнэ</p>';return;}
-  prev.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.5rem">`+
-    items.map((it,i)=>`<div style="background:rgba(255,255,255,.04);border-radius:8px;padding:.5rem .75rem;border:1px solid rgba(255,255,255,.07)">
-      <div style="font-weight:700;color:rgba(255,255,255,.88);font-size:.82rem">${i+1}. ${it.name}</div>
-      <div style="color:rgba(255,255,255,.4);font-size:.72rem">${it.description}</div>
-      <div style="color:#F5C120;font-weight:700;font-size:.8rem;margin-top:.2rem">₮${it.price.toLocaleString()}</div>
-    </div>`).join('')+
-    `</div><p style="color:rgba(255,255,255,.3);font-size:.72rem;margin-top:.5rem;text-align:right">${items.length} хоол</p>`;
-}
-
-async function replaceMenu(){
-  const bid=document.getElementById('menuBranchSel').value;
-  const tmpl=document.getElementById('menuTemplate').value;
-  const errEl=document.getElementById('menuReplErr');
-  errEl.style.display='none';
-  if(!bid){errEl.textContent='Байршил сонгоно уу';errEl.style.display='block';return;}
-  const items=MENU_TEMPLATES[tmpl]||[];
-  const bName=brs[bid]?.name||bid;
-  if(!confirm(`"${bName}" байршлын бүх хоолны цэсийг устгаж ${items.length} шинэ хоолоор орлуулах уу?`))return;
-  try{
-    // 1. Delete existing menu
-    await db.ref('branches/'+bid+'/menu').remove();
-    // 2. Delete existing categories
-    await db.ref('branches/'+bid+'/categories').remove();
-    // 3. Add new items
-    const cats=new Set();
-    let so=Date.now();
-    for(const item of items){
-      await db.ref('branches/'+bid+'/menu').push({...item,image:'',available:true,createdAt:Date.now()});
-      cats.add(item.category);
-    }
-    // 4. Add categories
-    for(const cat of cats){
-      await db.ref('branches/'+bid+'/categories').push({name:cat,visible:true,sortOrder:so++});
-    }
-    showToast('✅ '+bName+' цэс шинэчлэгдлэв! ('+items.length+' хоол)');
-    errEl.style.display='none';
-  }catch(e){errEl.textContent='Алдаа: '+e.message;errEl.style.display='block';}
-}
 
 </script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js">
-const MENU_TEMPLATES = {
-  harbin: [
-    {name:'Мажан',description:'Sesame paste · 芝麻酱',price:3000,category:'Дүрмэл',allergens:'Тунгалаг самар'},
-    {name:'Жууцай',description:'Chinese chive flower · 韭菜花',price:2000,category:'Дүрмэл',allergens:''},
-    {name:'Дарсан сармис',description:'Sugar-pickled garlic · 糖蒜',price:2000,category:'Дүрмэл',allergens:''},
-    {name:'Цуутай амтлагч',description:'Seafood Juice · 海鲜汁',price:2000,category:'Дүрмэл',allergens:'Далайн бүтээгдэхүүн'},
-    {name:'Улаан дупу',description:'Fermented bean curd · 酱豆腐',price:2000,category:'Дүрмэл',allergens:'Буурцаг'},
-    {name:'Яншуй',description:'Cilantro powder · 香菜末',price:2000,category:'Дүрмэл',allergens:''},
-    {name:'Ногоон сонгино',description:'Chopped scallions · 葱花',price:2000,category:'Дүрмэл',allergens:''},
-    {name:'Халуун чинжүү',description:'Wild pepper · 野山椒',price:2000,category:'Дүрмэл',allergens:''},
-    {name:'Халуун тос',description:'Chili oil · 辣椒油',price:2000,category:'Дүрмэл',allergens:''},
-    {name:'Сармис',description:'Minced garlic · 蒜末',price:2000,category:'Дүрмэл',allergens:''},
-  ],
-  mongolian: [
-    {name:'Цуйван',description:'Гурилтай шарсан мах, хүнсний ногоо',price:12000,category:'Үндсэн хоол',allergens:'Гурил'},
-    {name:'Хуушуур',description:'4 ширхэг шарсан гурилтай мах',price:8000,category:'Үндсэн хоол',allergens:'Гурил'},
-    {name:'Банштай шөл',description:'Уламжлалт банш, чанасан мах',price:9000,category:'Шөл',allergens:'Мах'},
-    {name:'Кофе',description:'Хос эспрессо',price:4500,category:'Ундаа',allergens:''},
-  ],
-  empty: []
-};
-
-function fillMenuBranchSel(){
-  const sel=document.getElementById('menuBranchSel');
-  if(!sel)return;
-  sel.innerHTML='<option value="">-- Байршил сонгоно уу --</option>';
-  Object.values(brs).forEach(b=>sel.innerHTML+=`<option value="${b.id}">${b.name||b.id}</option>`);
-}
-
-function loadTemplate(){
-  const tmpl=document.getElementById('menuTemplate').value;
-  const items=MENU_TEMPLATES[tmpl]||[];
-  const prev=document.getElementById('menuPreview');
-  if(!items.length){prev.innerHTML='<p style="color:rgba(255,255,255,.4);font-size:.8rem;text-align:center">Хоосон — менежер нэвтэрсний дараа гараар нэмнэ</p>';return;}
-  prev.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.5rem">`+
-    items.map((it,i)=>`<div style="background:rgba(255,255,255,.04);border-radius:8px;padding:.5rem .75rem;border:1px solid rgba(255,255,255,.07)">
-      <div style="font-weight:700;color:rgba(255,255,255,.88);font-size:.82rem">${i+1}. ${it.name}</div>
-      <div style="color:rgba(255,255,255,.4);font-size:.72rem">${it.description}</div>
-      <div style="color:#F5C120;font-weight:700;font-size:.8rem;margin-top:.2rem">₮${it.price.toLocaleString()}</div>
-    </div>`).join('')+
-    `</div><p style="color:rgba(255,255,255,.3);font-size:.72rem;margin-top:.5rem;text-align:right">${items.length} хоол</p>`;
-}
-
-async function replaceMenu(){
-  const bid=document.getElementById('menuBranchSel').value;
-  const tmpl=document.getElementById('menuTemplate').value;
-  const errEl=document.getElementById('menuReplErr');
-  errEl.style.display='none';
-  if(!bid){errEl.textContent='Байршил сонгоно уу';errEl.style.display='block';return;}
-  const items=MENU_TEMPLATES[tmpl]||[];
-  const bName=brs[bid]?.name||bid;
-  if(!confirm(`"${bName}" байршлын бүх хоолны цэсийг устгаж ${items.length} шинэ хоолоор орлуулах уу?`))return;
-  try{
-    // 1. Delete existing menu
-    await db.ref('branches/'+bid+'/menu').remove();
-    // 2. Delete existing categories
-    await db.ref('branches/'+bid+'/categories').remove();
-    // 3. Add new items
-    const cats=new Set();
-    let so=Date.now();
-    for(const item of items){
-      await db.ref('branches/'+bid+'/menu').push({...item,image:'',available:true,createdAt:Date.now()});
-      cats.add(item.category);
-    }
-    // 4. Add categories
-    for(const cat of cats){
-      await db.ref('branches/'+bid+'/categories').push({name:cat,visible:true,sortOrder:so++});
-    }
-    showToast('✅ '+bName+' цэс шинэчлэгдлэв! ('+items.length+' хоол)');
-    errEl.style.display='none';
-  }catch(e){errEl.textContent='Алдаа: '+e.message;errEl.style.display='block';}
-}
 
 </script>
 <style>
@@ -347,34 +203,6 @@ tr:last-child td{border-bottom:none}
     </div>
 
 
-    <!-- ══ ЦЭС ТОХИРУУЛАХ ══ -->
-    <div class="card">
-      <div class="card-title">🍜 Байршлын цэс тохируулах</div>
-      <div style="background:rgba(245,193,32,.08);border:1px solid rgba(245,193,32,.2);border-radius:8px;padding:.65rem 1rem;margin-bottom:1rem;font-size:.8rem;color:rgba(255,255,255,.7)">
-        💡 Сонгосон байршлын <b>бүх хоолны цэсийг устгаж</b> шинэ цэсээр орлуулна. Менежер нэвтэрсний дараа нэмж засаж болно.
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.875rem">
-        <div>
-          <label>Байршил сонгох</label>
-          <select id="menuBranchSel" style="width:100%">
-            <option value="">-- Байршил сонгоно уу --</option>
-          </select>
-        </div>
-        <div>
-          <label>Ашиглах загвар</label>
-          <select id="menuTemplate" onchange="loadTemplate()" style="width:100%">
-            <option value="harbin">🥘 Харбин Хятад Ресторан</option>
-            <option value="mongolian">🍖 Монгол хоол</option>
-            <option value="empty">✏️ Хоосон (гараар оруулах)</option>
-          </select>
-        </div>
-      </div>
-      <div id="menuPreview" style="background:#111117;border-radius:10px;padding:.875rem;margin-bottom:.875rem;max-height:280px;overflow-y:auto;border:1px solid rgba(255,255,255,.08)">
-        <p style="color:rgba(255,255,255,.3);font-size:.8rem;text-align:center">Загвар сонгоно уу</p>
-      </div>
-      <div id="menuReplErr" class="err"></div>
-      <button class="btn btn-primary" onclick="replaceMenu()" style="padding:.7rem 1.75rem">🔄 Цэс орлуулах</button>
-    </div>
 
     <!-- ══════════════════════════════════════
          БАЙРШЛЫН ЖАГСААЛТ
@@ -482,7 +310,7 @@ function doLogin(){
   if(!firebase.apps.length)firebase.initializeApp(FB);
   db=firebase.database();
   dlog('✓ Firebase холбогдлоо: '+FB.databaseURL,'ok');
-  initDate();loadTemplate();
+  initDate();
   // Load licenses once (avoid on() race condition)
   loadLicenses();
 }
@@ -804,78 +632,6 @@ document.addEventListener('click',e=>{if(e.target.classList.contains('mbg'))e.ta
 /* ════ INIT FILTERS ════════════════════════════════ */
 document.addEventListener('DOMContentLoaded',buildFilters);
 
-const MENU_TEMPLATES = {
-  harbin: [
-    {name:'Мажан',description:'Sesame paste · 芝麻酱',price:3000,category:'Дүрмэл',allergens:'Тунгалаг самар'},
-    {name:'Жууцай',description:'Chinese chive flower · 韭菜花',price:2000,category:'Дүрмэл',allergens:''},
-    {name:'Дарсан сармис',description:'Sugar-pickled garlic · 糖蒜',price:2000,category:'Дүрмэл',allergens:''},
-    {name:'Цуутай амтлагч',description:'Seafood Juice · 海鲜汁',price:2000,category:'Дүрмэл',allergens:'Далайн бүтээгдэхүүн'},
-    {name:'Улаан дупу',description:'Fermented bean curd · 酱豆腐',price:2000,category:'Дүрмэл',allergens:'Буурцаг'},
-    {name:'Яншуй',description:'Cilantro powder · 香菜末',price:2000,category:'Дүрмэл',allergens:''},
-    {name:'Ногоон сонгино',description:'Chopped scallions · 葱花',price:2000,category:'Дүрмэл',allergens:''},
-    {name:'Халуун чинжүү',description:'Wild pepper · 野山椒',price:2000,category:'Дүрмэл',allergens:''},
-    {name:'Халуун тос',description:'Chili oil · 辣椒油',price:2000,category:'Дүрмэл',allergens:''},
-    {name:'Сармис',description:'Minced garlic · 蒜末',price:2000,category:'Дүрмэл',allergens:''},
-  ],
-  mongolian: [
-    {name:'Цуйван',description:'Гурилтай шарсан мах, хүнсний ногоо',price:12000,category:'Үндсэн хоол',allergens:'Гурил'},
-    {name:'Хуушуур',description:'4 ширхэг шарсан гурилтай мах',price:8000,category:'Үндсэн хоол',allergens:'Гурил'},
-    {name:'Банштай шөл',description:'Уламжлалт банш, чанасан мах',price:9000,category:'Шөл',allergens:'Мах'},
-    {name:'Кофе',description:'Хос эспрессо',price:4500,category:'Ундаа',allergens:''},
-  ],
-  empty: []
-};
-
-function fillMenuBranchSel(){
-  const sel=document.getElementById('menuBranchSel');
-  if(!sel)return;
-  sel.innerHTML='<option value="">-- Байршил сонгоно уу --</option>';
-  Object.values(brs).forEach(b=>sel.innerHTML+=`<option value="${b.id}">${b.name||b.id}</option>`);
-}
-
-function loadTemplate(){
-  const tmpl=document.getElementById('menuTemplate').value;
-  const items=MENU_TEMPLATES[tmpl]||[];
-  const prev=document.getElementById('menuPreview');
-  if(!items.length){prev.innerHTML='<p style="color:rgba(255,255,255,.4);font-size:.8rem;text-align:center">Хоосон — менежер нэвтэрсний дараа гараар нэмнэ</p>';return;}
-  prev.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.5rem">`+
-    items.map((it,i)=>`<div style="background:rgba(255,255,255,.04);border-radius:8px;padding:.5rem .75rem;border:1px solid rgba(255,255,255,.07)">
-      <div style="font-weight:700;color:rgba(255,255,255,.88);font-size:.82rem">${i+1}. ${it.name}</div>
-      <div style="color:rgba(255,255,255,.4);font-size:.72rem">${it.description}</div>
-      <div style="color:#F5C120;font-weight:700;font-size:.8rem;margin-top:.2rem">₮${it.price.toLocaleString()}</div>
-    </div>`).join('')+
-    `</div><p style="color:rgba(255,255,255,.3);font-size:.72rem;margin-top:.5rem;text-align:right">${items.length} хоол</p>`;
-}
-
-async function replaceMenu(){
-  const bid=document.getElementById('menuBranchSel').value;
-  const tmpl=document.getElementById('menuTemplate').value;
-  const errEl=document.getElementById('menuReplErr');
-  errEl.style.display='none';
-  if(!bid){errEl.textContent='Байршил сонгоно уу';errEl.style.display='block';return;}
-  const items=MENU_TEMPLATES[tmpl]||[];
-  const bName=brs[bid]?.name||bid;
-  if(!confirm(`"${bName}" байршлын бүх хоолны цэсийг устгаж ${items.length} шинэ хоолоор орлуулах уу?`))return;
-  try{
-    // 1. Delete existing menu
-    await db.ref('branches/'+bid+'/menu').remove();
-    // 2. Delete existing categories
-    await db.ref('branches/'+bid+'/categories').remove();
-    // 3. Add new items
-    const cats=new Set();
-    let so=Date.now();
-    for(const item of items){
-      await db.ref('branches/'+bid+'/menu').push({...item,image:'',available:true,createdAt:Date.now()});
-      cats.add(item.category);
-    }
-    // 4. Add categories
-    for(const cat of cats){
-      await db.ref('branches/'+bid+'/categories').push({name:cat,visible:true,sortOrder:so++});
-    }
-    showToast('✅ '+bName+' цэс шинэчлэгдлэв! ('+items.length+' хоол)');
-    errEl.style.display='none';
-  }catch(e){errEl.textContent='Алдаа: '+e.message;errEl.style.display='block';}
-}
 
 </script>
 
