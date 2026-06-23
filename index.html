@@ -114,6 +114,39 @@ tr:last-child td{border-bottom:none}
       <div class="stat"><div class="v" id="sBlk" style="color:#E74C3C">0</div><div class="l">Хаагдсан/Дууссан</div></div>
     </div>
 
+
+    <!-- CREATE FORM -->
+    <div class="card">
+      <div class="card-title">➕ Шинэ байршил + лиценз үүсгэх</div>
+      <div style="background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2);border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem;font-size:.8rem;color:rgba(255,255,255,.7);line-height:1.6">
+        ✅ Нэг товчоор байршил + лиценз нэгэн зэрэг үүсч, автоматаар холбогдоно.<br>
+        Менежерт <b>лицензийн түлхүүр</b> болон <b>нэвтрэх сайтын линк</b> өгнө.
+      </div>
+      <div class="create-grid">
+        <div class="span3"><label>Ресторан / Салбарын нэр *</label><input id="cName" placeholder="Galbi-2 салбар"/></div>
+        <div><label>Эзэмшигч</label><input id="cOwner" placeholder="Батболд"/></div>
+        <div><label>Утас</label><input id="cPhone" placeholder="99001234" maxlength="8"/></div>
+        <div><label>Хугацаа</label>
+          <select id="cDur" onchange="calcEnd()">
+            <option value="14">🟡 Туршилт — 14 хоног</option>
+            <option value="30">🟢 Төлсөн — 1 сар</option>
+            <option value="90">🟢 Төлсөн — 3 сар</option>
+            <option value="180">🟢 Төлсөн — 6 сар</option>
+            <option value="365">🟢 Төлсөн — 1 жил</option>
+          </select>
+        </div>
+        <div><label>Эхлэх огноо</label><input type="date" id="cStart" onchange="calcEnd()"/></div>
+        <div><label>Дуусах огноо (автомат)</label><input type="date" id="cEnd" readonly style="opacity:.5"/></div>
+        <div class="span3"><label>Тэмдэглэл</label><input id="cNote" placeholder="Нэмэлт тайлбар..."/></div>
+      </div>
+      <div id="createErr" class="err" style="display:none;margin-top:.5rem"></div>
+      <div id="createProgress" style="color:rgba(255,255,255,.45);font-size:.82rem;margin-top:.5rem;display:none">⏳ Үүсгэж байна...</div>
+      <div style="margin-top:.875rem;display:flex;gap:.75rem;align-items:center">
+        <button class="btn btn-primary" onclick="createAll()" style="padding:.7rem 1.5rem">✅ Байршил + Лиценз үүсгэх</button>
+        <span id="newKey" style="font-family:monospace;color:#2ECC71;font-size:.9rem;font-weight:700"></span>
+      </div>
+    </div>
+
     <!-- ══════════════════════════════════════
          БАЙРШЛЫН ЖАГСААЛТ
     ══════════════════════════════════════ -->
@@ -228,16 +261,64 @@ function doLogin(){
 
 function doLogout(){location.reload();}
 
+function calcEnd(){
+  const days=parseInt(document.getElementById('cDur').value)||14;
+  const s=document.getElementById('cStart').value;
+  if(!s)return;
+  const d=new Date(s);d.setDate(d.getDate()+days);
+  document.getElementById('cEnd').value=d.toISOString().slice(0,10);
+}
+
+async function createAll(){
+  const name=document.getElementById('cName').value.trim();
+  const errEl=document.getElementById('createErr');
+  const prog=document.getElementById('createProgress');
+  errEl.style.display='none';
+  if(!name){errEl.textContent='Байршлын нэр оруулна уу';errEl.style.display='block';return;}
+  const startStr=document.getElementById('cStart').value;
+  const endStr=document.getElementById('cEnd').value;
+  const dur=parseInt(document.getElementById('cDur').value)||14;
+  prog.style.display='block';prog.textContent='⏳ 1/4 Байршил үүсгэж байна...';
+  try{
+    const bRef=db.ref('branches').push();
+    const bid=bRef.key;
+    await bRef.set({name,address:'',createdAt:Date.now()});
+    prog.textContent='⏳ 2/4 Цэс нэмж байна...';
+    for(const item of SEED_MENU)await db.ref('branches/'+bid+'/menu').push({...item,createdAt:Date.now()});
+    let so=Date.now();
+    for(const cat of SEED_CATS)await db.ref('branches/'+bid+'/categories').push({name:cat,visible:true,sortOrder:so++});
+    for(let t=1;t<=5;t++)await db.ref('branches/'+bid+'/tables').push({number:t,status:'available'});
+    prog.textContent='⏳ 3/4 Лиценз үүсгэж байна...';
+    const key=genKey();
+    const licData={branchName:name,branchId:bid,ownerName:document.getElementById('cOwner').value.trim()||'—',phone:document.getElementById('cPhone').value.trim()||'',status:dur<=14?'trial':'paid',startDate:new Date(startStr).getTime(),endDate:new Date(endStr).getTime(),createdAt:Date.now(),note:document.getElementById('cNote').value.trim()||''};
+    await db.ref('licenses/'+key).set(licData);
+    prog.textContent='⏳ 4/4 Холбож байна...';
+    await db.ref('branches/'+bid+'/licenseKey').set(key);
+    prog.style.display='none';
+    const el=document.getElementById('newKey');
+    el.textContent='✅ '+key;
+    el.title='Менежерт өгөх түлхүүр';
+    setTimeout(()=>el.textContent='',20000);
+    ['cName','cOwner','cPhone','cNote'].forEach(id=>document.getElementById(id).value='');
+    showToast('✅ '+name+' амжилттай үүслээ!');
+  }catch(e){
+    prog.style.display='none';
+    errEl.textContent='Алдаа: '+e.message;
+    errEl.style.display='block';
+  }
+}
+
+
 
 
 function loadLicenses(){
-    db.ref('licenses').once('value').then(snap=>{
+  db.ref('licenses').on('value',snap=>{
     rows=[];
-    if(snap.exists())snap.forEach(c=>{rows.push({key:c.key,...c.val()});});
+    if(snap.exists())snap.forEach(c=>rows.push({key:c.key,...c.val()}));
     const cnt=document.getElementById('dbCount');
     if(cnt)cnt.textContent='Firebase: '+rows.length+' бичилт';
     updateStats();render();
-  }).catch(e=>console.error(e));
+  });
 }
 function manualRefresh(){
   const btn=event.currentTarget||event.target;
