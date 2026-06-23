@@ -115,96 +115,6 @@ tr:last-child td{border-bottom:none}
     </div>
 
     <!-- ══════════════════════════════════════
-         ШИНЭ БАЙРШИЛ + ЛИЦЕНЗ ҮҮСГЭХ
-    ══════════════════════════════════════ -->
-    <div class="card">
-      <div class="card-title">➕ Шинэ байршил + лиценз үүсгэх</div>
-
-      <div class="info">
-        💡 Энэ маяягийг бөглөхөд <b>салбар болон лиценз нэгэн зэрэг</b> үүсч, автоматаар холбогдоно.<br>
-        Менежерт <b>лицензийн түлхүүр</b> болон <b>сайтын линк</b>-ийг өгнө.
-      </div>
-
-      <div class="create-grid">
-        <div class="span3">
-          <label>Ресторан / Салбарын нэр *</label>
-          <input id="cName" placeholder="Galbi-2 салбар"/>
-        </div>
-
-        <div>
-          <label>Эзэмшигчийн нэр</label>
-          <input id="cOwner" placeholder="Батболд"/>
-        </div>
-        <div>
-          <label>Утас</label>
-          <input id="cPhone" placeholder="99001234" maxlength="8"/>
-        </div>
-        <div>
-          <label>Лицензийн хугацаа</label>
-          <select id="cDur" onchange="calcEnd()">
-            <option value="14">🟡 Туршилт — 14 хоног</option>
-            <option value="30">🟢 Төлсөн — 1 сар</option>
-            <option value="90">🟢 Төлсөн — 3 сар</option>
-            <option value="180">🟢 Төлсөн — 6 сар</option>
-            <option value="365">🟢 Төлсөн — 1 жил</option>
-          </select>
-        </div>
-        <div>
-          <label>Эхлэх огноо</label>
-          <input type="date" id="cStart" onchange="calcEnd()"/>
-        </div>
-        <div>
-          <label>Дуусах огноо (автомат)</label>
-          <input type="date" id="cEnd" readonly style="opacity:.5"/>
-        </div>
-        <div class="span3">
-          <label>Тэмдэглэл (заавал биш)</label>
-          <input id="cNote" placeholder="Жишээ: Galbi 2-р салбар, AnHeung байршил"/>
-        </div>
-      </div>
-
-      <div id="createErr" class="err"></div>
-      <div id="createProgress" style="color:rgba(255,255,255,.45);font-size:.82rem;margin-top:.75rem;display:none">⏳ Үүсгэж байна...</div>
-
-      <div style="margin-top:1rem">
-        <button class="btn btn-primary" onclick="createAll()" style="padding:.75rem 1.75rem;font-size:.9rem">
-          ✅ Байршил + Лиценз үүсгэх
-        </button>
-      </div>
-    </div>
-
-    <!-- SUCCESS RESULT -->
-    <div id="successCard" style="display:none" class="card">
-      <div style="text-align:center;padding:.5rem 0 1rem">
-        <div style="font-size:2.5rem;margin-bottom:.5rem">🎉</div>
-        <h2 style="color:#2ECC71;font-size:1.1rem;margin-bottom:.25rem">Амжилттай үүслээ!</h2>
-        <p style="color:rgba(255,255,255,.5);font-size:.82rem">Менежерт дараах мэдээллийг өгнө үү</p>
-      </div>
-      <div style="background:#111117;border-radius:12px;padding:1.25rem;border:1px solid rgba(255,255,255,.08)">
-        <div style="margin-bottom:.875rem">
-          <div style="font-size:.68rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem">Нэвтрэх сайт</div>
-          <div style="font-family:monospace;color:#5eead4;font-size:.95rem">https://res-menu-ashy-two.vercel.app/</div>
-        </div>
-        <div style="margin-bottom:.875rem">
-          <div style="font-size:.68rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem">Лицензийн түлхүүр (анх удаа оруулна)</div>
-          <div style="display:flex;align-items:center;gap:.75rem">
-            <span class="kcode" id="resKey" style="font-size:1rem;padding:.3rem .75rem"></span>
-            <button class="btn btn-green" onclick="copyResult()" style="padding:.65rem 1.5rem;font-size:.9rem">📋 Мэдээлэл хуулах</button>
-          </div>
-        </div>
-        <div>
-          <div style="font-size:.68rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem">Нэвтрэх арга</div>
-          <div style="font-size:.8rem;color:rgba(255,255,255,.6);line-height:1.5">Лицензийн түлхүүрийг оруулаад → өөрийн нууц үг үүсгэнэ</div>
-        </div>
-      </div>
-      <p style="color:rgba(255,255,255,.35);font-size:.75rem;margin-top:.875rem;line-height:1.5">
-        ⚠️ Лицензийн түлхүүрийг нэг л удаа ашиглана (нэвтрэх үед нууц үг үүсгэнэ). Дараа нь нууц үгээрээ л нэвтэрнэ.
-      </p>
-    </div>
-
-
-
-    <!-- ══════════════════════════════════════
          БАЙРШЛЫН ЖАГСААЛТ
     ══════════════════════════════════════ -->
     <div class="card">
@@ -309,13 +219,12 @@ function doLogin(){
   document.getElementById('app').style.display='block';
   if(!firebase.apps.length)firebase.initializeApp(FB);
   db=firebase.database();
-  dlog('✓ Firebase холбогдлоо: '+FB.databaseURL,'ok');
-  initDate();
+    initDate();
   // Load licenses once (avoid on() race condition)
   loadLicenses();
 }
 
-function dlog(msg,type=''){console.log(msg);}
+function dlog(){}
 
 function doLogout(){location.reload();}
 
@@ -323,36 +232,34 @@ function doLogout(){location.reload();}
 async function testFirebaseWrite(){
   const testKey='_test_'+Date.now();
   const url='https://restaurant-system-6fb57-default-rtdb.asia-southeast1.firebasedatabase.app/';
-  dlog('▶ REST API write test эхэллээ...','info');
-  try{
+    try{
     // Write via REST
     const wr=await fetch(url+'_test_writes/'+testKey+'.json',{method:'PUT',body:JSON.stringify({val:'ok',ts:Date.now()}),headers:{'Content-Type':'application/json'}});
     const wres=await wr.json();
-    dlog('REST write: '+JSON.stringify(wres)+(wr.ok?' ✓':' ✗'),'ok');
+    +(wr.ok?' ✓':' ✗'),'ok');
     // Read via REST 
     const rr=await fetch(url+'_test_writes/'+testKey+'.json');
     const rres=await rr.json();
-    dlog('REST read back: '+JSON.stringify(rres),(rres&&rres.val==='ok'?'ok':'err'));
+    ,(rres&&rres.val==='ok'?'ok':'err'));
     // Cleanup
     await fetch(url+'_test_writes/'+testKey+'.json',{method:'DELETE'});
     // Check licenses count via REST
     const lr=await fetch(url+'licenses.json?shallow=true');
     const lres=await lr.json();
     const cnt=lres?Object.keys(lres).length:0;
-    dlog('REST /licenses/ count: '+cnt+' — '+JSON.stringify(Object.keys(lres||{})),'info');
-  }catch(e){dlog('REST алдаа: '+e.message,'err');}
+    ),'info');
+  }catch(e){}
 }
 
 function loadLicenses(){
-  dlog('▶ Лицензүүд Firebase-с татаж байна...','info');
-  db.ref('licenses').once('value').then(snap=>{
+    db.ref('licenses').once('value').then(snap=>{
     rows=[];
     if(snap.exists())snap.forEach(c=>{rows.push({key:c.key,...c.val()});});
     const cnt=document.getElementById('dbCount');
     if(cnt)cnt.textContent='Firebase: '+rows.length+' бичилт';
-    dlog('✓ '+rows.length+' лиценз уншлаа: '+rows.map(r=>r.branchName).join(', '),'ok');
+    .join(', '),'ok');
     updateStats();render();
-  }).catch(e=>dlog('❌ Firebase унших алдаа: '+e.message,'err'));
+  }).catch(e=>);
 }
 function manualRefresh(){
   const btn=event.currentTarget||event.target;
@@ -362,11 +269,11 @@ function manualRefresh(){
     if(snap.exists())snap.forEach(c=>rows.push({key:c.key,...c.val()}));
     const cnt=document.getElementById('dbCount');
     if(cnt)cnt.textContent='Firebase: '+rows.length+' бичилт · '+new Date().toLocaleTimeString('mn-MN');
-    dlog('🔄 Manual refresh: '+rows.length+' лиценз — '+rows.map(r=>r.branchName).join(', '),'ok');
+    .join(', '),'ok');
     updateStats();render();
     btn.textContent='🔄 Шинэчлэх';btn.disabled=false;
     showToast('✓ '+rows.length+' байршил');
-  }).catch(e=>{dlog('❌ '+e.message,'err');btn.textContent='🔄 Шинэчлэх';btn.disabled=false;});
+  }).catch(e=>{btn.textContent='🔄 Шинэчлэх';btn.disabled=false;});
 }
 
 /* ════ DATE HELPERS ════════════════════════════════ */
@@ -387,75 +294,7 @@ function dl(e){return Math.ceil((e-Date.now())/86400000);}
 function effSt(r){if(r.status==='blocked')return'blocked';if(r.status==='expired'||dl(r.endDate)<=0)return'expired';return r.status;}
 
 /* ════ CREATE ALL (branch + license + link) ════════ */
-async function createAll(){
-  const name=document.getElementById('cName').value.trim();
-  const errEl=document.getElementById('createErr');
-  const prog=document.getElementById('createProgress');
-  errEl.style.display='none';
-  if(!name){errEl.textContent='Байршлын нэр оруулна уу';errEl.style.display='block';return;}
-  const startStr=document.getElementById('cStart').value;
-  const endStr=document.getElementById('cEnd').value;
-  const dur=parseInt(document.getElementById('cDur').value)||14;
-  prog.style.display='block';prog.textContent='⏳ 1/4 Байршил үүсгэж байна...';
-  dlog('▶ createAll эхэллээ: '+name,'info');
-  dlog('Firebase URL: '+db.app.options.databaseURL,'info');
-  try{
-    // 1. Create branch (no managerPin needed - license key auth)
-    const bRef=db.ref('branches').push();
-    const bid=bRef.key;
-    await bRef.set({name,address:'',createdAt:Date.now()});
-    dlog('✓ Branch үүслээ: '+bid,'ok');
-    dlog('✓ Цэс нэмж байна...','ok');
-    prog.textContent='⏳ 2/4 Цэс нэмж байна...';
-    // 2. Seed menu + categories + tables
-    for(const item of SEED_MENU)await db.ref(`branches/${bid}/menu`).push({...item,createdAt:Date.now()});
-    let so=Date.now();
-    for(const cat of SEED_CATS)await db.ref(`branches/${bid}/categories`).push({name:cat,visible:true,sortOrder:so++});
-    for(let t=1;t<=5;t++)await db.ref(`branches/${bid}/tables`).push({number:t,status:'available'});
-    prog.textContent='⏳ 3/4 Лиценз үүсгэж байна...';
-    // 3. Create license
-    const key=genKey();
-    const licData={
-      branchName:name,branchId:bid,
-      ownerName:document.getElementById('cOwner').value.trim()||'—',
-      phone:document.getElementById('cPhone').value.trim()||'',
-      status:dur<=14?'trial':'paid',
-      startDate:new Date(startStr).getTime(),
-      endDate:new Date(endStr).getTime(),
-      createdAt:Date.now(),
-      note:document.getElementById('cNote').value.trim()||'',
-    };
-    dlog('▶ License бичиж байна: '+key,'info');
-    await db.ref('licenses/'+key).set(licData);
-    dlog('✓ License set() дуусав','ok');
-    dlog('▶ Баталгаажуулж байна...','info');
-    const verify=await db.ref('licenses/'+key).once('value');
-    dlog('Verify exists: '+verify.exists()+ ' val:'+JSON.stringify(verify.val()),'info');
-    if(!verify.exists())throw new Error('Лиценз Firebase-д хадгалагдсангүй. Дахин оролдоно уу.');
-    prog.textContent='⏳ 4/4 Холбож байна...';
-    // 4. Link
-    await db.ref('branches/'+bid+'/licenseKey').set(key);
-    prog.style.display='none';
-    // Show result
-    lastKey=key;
-    document.getElementById('resKey').textContent=key;
-    
-    document.getElementById('successCard').style.display='block';
-    document.getElementById('successCard').scrollIntoView({behavior:'smooth'});
-    // Clear form
-    ['cName','cOwner','cPhone','cNote'].forEach(id=>document.getElementById(id).value='');
-    initDate();
-    // Add to local rows immediately
-    rows.unshift({key,...licData});
-    updateStats();render();
-  }catch(e){
-    dlog('❌ АЛДАА: '+e.message+' | '+e.stack,'err');
-    prog.style.display='none';
-    errEl.textContent='Алдаа гарлаа: '+e.message;
-    errEl.style.display='block';
-    console.error(e);
-  }
-}
+
 function copyResult(){
   const txt='Нэвтрэх сайт: '+APP_URL+'\nЛицензийн түлхүүр: '+lastKey+'\n\nМенежер анх нэвтрэхдээ лицензийн түлхүүрийг оруулаад нууц үгээ үүсгэнэ.';
   copyToClipboard(txt,'✅ Хуулагдлаа! Менежерт илгээнэ үү.');
@@ -659,13 +498,6 @@ document.addEventListener('DOMContentLoaded',buildFilters);
 
 </script>
 
-<div id="debugPanel" class="debug-panel">
-  <div class="debug-hdr">
-    <span style="color:#E87B2F;font-weight:700;font-size:.75rem">🐛 DEBUG CONSOLE v4</span>
-    <button onclick="document.getElementById('debugLog').innerHTML=''" style="background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.5);padding:.2rem .6rem;border-radius:4px;cursor:pointer;font-size:.72rem">Цэвэрлэх</button>
-  </div>
-  <div id="debugLog"></div>
-</div>
-<div style="height:190px"></div>
+
 </body>
 </html>
