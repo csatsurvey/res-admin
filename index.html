@@ -312,16 +312,8 @@ function doLogin(){
   db=firebase.database();
   dlog('✓ Firebase холбогдлоо: '+FB.databaseURL,'ok');
   initDate();
-  // Listen to licenses (source of truth)
-  db.ref('licenses').on('value',snap=>{
-    dlog('🔔 on(value) fired: '+(snap.numChildren())+' items','info');
-    rows=[];
-    if(snap.exists())snap.forEach(c=>rows.push({key:c.key,...c.val()}));
-    const cnt=document.getElementById('dbCount');
-    if(cnt)cnt.textContent='Firebase: '+rows.length+' бичилт';
-    updateStats();
-    render();
-  });
+  // Load licenses once (avoid on() race condition)
+  loadLicenses();
 }
 
 function dlog(msg,type=''){
@@ -336,18 +328,31 @@ function dlog(msg,type=''){
 }
 
 function doLogout(){location.reload();}
+
+function loadLicenses(){
+  dlog('▶ Лицензүүд Firebase-с татаж байна...','info');
+  db.ref('licenses').once('value').then(snap=>{
+    rows=[];
+    if(snap.exists())snap.forEach(c=>{rows.push({key:c.key,...c.val()});});
+    const cnt=document.getElementById('dbCount');
+    if(cnt)cnt.textContent='Firebase: '+rows.length+' бичилт';
+    dlog('✓ '+rows.length+' лиценз уншлаа: '+rows.map(r=>r.branchName).join(', '),'ok');
+    updateStats();render();
+  }).catch(e=>dlog('❌ Firebase унших алдаа: '+e.message,'err'));
+}
 function manualRefresh(){
-  const btn=event.target;
+  const btn=event.currentTarget||event.target;
   btn.textContent='⏳';btn.disabled=true;
-  db.ref('licenses').once('value',snap=>{
+  db.ref('licenses').once('value').then(snap=>{
     rows=[];
     if(snap.exists())snap.forEach(c=>rows.push({key:c.key,...c.val()}));
     const cnt=document.getElementById('dbCount');
     if(cnt)cnt.textContent='Firebase: '+rows.length+' бичилт · '+new Date().toLocaleTimeString('mn-MN');
+    dlog('🔄 Manual refresh: '+rows.length+' лиценз — '+rows.map(r=>r.branchName).join(', '),'ok');
     updateStats();render();
     btn.textContent='🔄 Шинэчлэх';btn.disabled=false;
-    showToast('Firebase: '+rows.length+' байршил уншлаа');
-  });
+    showToast('✓ '+rows.length+' байршил');
+  }).catch(e=>{dlog('❌ '+e.message,'err');btn.textContent='🔄 Шинэчлэх';btn.disabled=false;});
 }
 
 /* ════ DATE HELPERS ════════════════════════════════ */
