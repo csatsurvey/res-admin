@@ -124,8 +124,8 @@ td{padding:0.65rem 0.875rem;border-bottom:1px solid rgba(255,255,255,0.05)}
       </div>
       <div class="form-grid">
         <div class="full">
-          <label class="lbl">Ресторан / Салбарын нэр *</label>
-          <input id="f-name" placeholder="Жишээ: Галби Ресторан - 1-р салбар"/>
+          <label class="lbl">Ресторан / Үндсэн салбарын нэр *</label>
+          <input id="f-name" placeholder="Жишээ: MR Ling Ресторан"/>
         </div>
         <div>
           <label class="lbl">Эзэмшигч</label>
@@ -167,6 +167,39 @@ td{padding:0.65rem 0.875rem;border-bottom:1px solid rgba(255,255,255,0.05)}
       <div id="create-err" class="error-msg hidden" style="margin-top:0.75rem"></div>
       <div id="create-success" class="hidden" style="margin-top:0.75rem"></div>
       <button class="btn btn-orange" onclick="createBranchAndLicense()" id="create-btn" style="margin-top:0.875rem;width:100%">✅ Байршил + Лиценз үүсгэх</button>
+    </div>
+
+    <!-- Sub-branch Form -->
+    <div class="section">
+      <div class="section-title">🔗 Дэд салбар нэмэх</div>
+      <div class="info-box" style="background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.3);color:rgba(147,197,253,0.9)">
+        📌 Үндсэн салбарын <b>лиценцийн кодыг</b> оруулж, дэд салбар нэмнэ. Нэг лиценц доор бүх салбар нэгдэнэ.
+      </div>
+      <div class="form-grid">
+        <div class="full">
+          <label class="lbl">Үндсэн лиценцийн код *</label>
+          <div style="display:flex;gap:0.5rem">
+            <input id="sub-lic" placeholder="RES-XXXX-XXXX" style="font-family:monospace;letter-spacing:0.08em;flex:1" oninput="this.value=this.value.toUpperCase()"/>
+            <button class="btn btn-gray" onclick="loadSubBranchInfo()" style="flex-shrink:0;padding:0 1rem">Шалгах</button>
+          </div>
+          <div id="sub-lic-info" style="margin-top:0.4rem;font-size:0.75rem;color:rgba(255,255,255,0.45)"></div>
+        </div>
+        <div class="full">
+          <label class="lbl">Дэд салбарын нэр *</label>
+          <input id="sub-name" placeholder="Жишээ: MR Ling — Салбар 2"/>
+        </div>
+        <div>
+          <label class="lbl">Менежерийн PIN *</label>
+          <input id="sub-pin" placeholder="4+ тоо" inputmode="numeric" maxlength="8"/>
+        </div>
+        <div>
+          <label class="lbl">Хаяг (заавал биш)</label>
+          <input id="sub-addr" placeholder="Хаяг..."/>
+        </div>
+      </div>
+      <div id="sub-err" class="error-msg hidden" style="margin-top:0.6rem"></div>
+      <div id="sub-success" class="hidden" style="margin-top:0.6rem"></div>
+      <button class="btn" onclick="createSubBranchHandler()" id="sub-btn" style="margin-top:0.875rem;width:100%;background:rgba(59,130,246,0.85);color:white">🔗 Дэд салбар нэмэх</button>
     </div>
 
     <!-- Branch List -->
@@ -622,6 +655,75 @@ function showToast(msg) {
   document.body.appendChild(t);
   setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),400);}, 2000);
 }
+
+// ── Sub-branch ──
+window._subLicInfo = null;
+
+window.loadSubBranchInfo = async function() {
+  const code = (document.getElementById('sub-lic').value||'').trim().toUpperCase();
+  const info = document.getElementById('sub-lic-info');
+  if(!code) { info.textContent=''; return; }
+  info.textContent = '⏳ Шалгаж байна...';
+  try {
+    const lic = window._licenses[code];
+    if(!lic) { info.style.color='#E74C3C'; info.textContent='❌ Лиценц олдсонгүй'; window._subLicInfo=null; return; }
+    const status = getEffectiveStatus(lic);
+    if(status==='blocked'||status==='expired') { info.style.color='#E74C3C'; info.textContent='❌ Лиценц хаагдсан/дууссан'; window._subLicInfo=null; return; }
+    const branch = lic.branchId && window._branches[lic.branchId];
+    const bName = branch?.name || lic.clientName || '?';
+    // Count existing sub-branches (branches sharing this licenseKey)
+    const subCount = Object.values(window._branches).filter((b) => b.licenseKey === code).length;
+    info.style.color = '#2ECC71';
+    info.textContent = `✅ ${bName} — одоо ${subCount} салбартай`;
+    window._subLicInfo = { licenseKey: code, restaurantName: bName };
+  } catch(e) {
+    info.style.color='#E74C3C'; info.textContent='Алдаа гарлаа'; window._subLicInfo=null;
+  }
+};
+
+window.createSubBranchHandler = async function() {
+  const errEl = document.getElementById('sub-err');
+  const sucEl = document.getElementById('sub-success');
+  errEl.classList.add('hidden'); sucEl.classList.add('hidden');
+
+  if(!window._subLicInfo) { errEl.textContent='Эхлэж лиценцийн кодоо шалгана уу'; errEl.classList.remove('hidden'); return; }
+  const name = (document.getElementById('sub-name').value||'').trim();
+  const pin = (document.getElementById('sub-pin').value||'').trim();
+  const addr = (document.getElementById('sub-addr').value||'').trim();
+
+  if(!name) { errEl.textContent='Дэд салбарын нэр оруулна уу'; errEl.classList.remove('hidden'); return; }
+  if(!pin || pin.length < 4) { errEl.textContent='PIN дор хаяж 4 тоо байх ёстой'; errEl.classList.remove('hidden'); return; }
+
+  const btn = document.getElementById('sub-btn');
+  btn.disabled=true; btn.textContent='⏳ Нэмж байна...';
+  try {
+    const branchRef = push(ref(db, 'branches'));
+    const branchId = branchRef.key;
+    await set(branchRef, {
+      name, address: addr, managerPin: pin,
+      licenseKey: window._subLicInfo.licenseKey,
+      createdAt: Date.now()
+    });
+    const loginUrl = `https://res-menu-ashy-two.vercel.app/?b=${branchId}`;
+    sucEl.innerHTML = `
+      <div style="background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.3);border-radius:10px;padding:1rem">
+        <p style="color:#2ECC71;font-weight:800;margin-bottom:0.5rem">✅ Дэд салбар нэмэгдлээ!</p>
+        <div class="link-box"><b>Нэр</b>${name}</div>
+        <div class="link-box" style="margin-top:0.5rem"><b>Лиценцийн код</b>${window._subLicInfo.licenseKey} <button class="copy-btn" onclick="copyText('${window._subLicInfo.licenseKey}')">📋</button></div>
+        <div class="link-box" style="margin-top:0.5rem"><b>Нэвтрэх линк</b>${loginUrl} <button class="copy-btn" onclick="copyText('${loginUrl}')">📋</button></div>
+        <div class="link-box" style="margin-top:0.5rem"><b>Менежерийн PIN</b>${pin}</div>
+      </div>`;
+    sucEl.classList.remove('hidden');
+    document.getElementById('sub-name').value='';
+    document.getElementById('sub-pin').value='';
+    document.getElementById('sub-addr').value='';
+    // Refresh sub-lic info
+    await window.loadSubBranchInfo();
+  } catch(e) {
+    errEl.textContent='Алдаа: '+e.message; errEl.classList.remove('hidden');
+  }
+  btn.disabled=false; btn.textContent='🔗 Дэд салбар нэмэх';
+};
 
 // Keyboard gate enter
 document.getElementById('gatePin').addEventListener('keydown', e=>{ if(e.key==='Enter') window.checkGate(); });
