@@ -1,566 +1,630 @@
 <!DOCTYPE html>
 <html lang="mn">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Ресторан Систем — Удирдлага</title>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js">
-
-</script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js">
-
-</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,sans-serif;background:#0d0d12;color:#fff;min-height:100vh}
-/* Login */
-.login{display:flex;align-items:center;justify-content:center;min-height:100vh}
-.lcard{background:#1a1a22;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:2.5rem;width:340px;text-align:center}
-.lcard h1{color:#F5C120;font-size:1.25rem;margin:.5rem 0 .25rem}
-/* Inputs */
-input,select{padding:.65rem .875rem;background:#1e1e2c;border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:.875rem;outline:none;width:100%;box-sizing:border-box}
-input:focus,select:focus{border-color:#F5C120}
-select option{background:#1e1e2c}
-label{font-size:.7rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.25rem;margin-top:.6rem}
-/* Buttons */
-.btn{padding:.6rem 1.1rem;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.85rem;display:inline-flex;align-items:center;gap:.35rem;transition:opacity .15s}
-.btn:hover{opacity:.82}.btn:disabled{opacity:.35;cursor:not-allowed}
-.btn-primary{background:#E87B2F;color:#fff}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0d0d12;color:#fff;min-height:100vh}
+.hidden{display:none!important}
+/* Gate */
+#gate{display:flex;align-items:center;justify-content:center;min-height:100vh}
+.gate-box{background:#1a1a22;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:2.5rem;width:100%;max-width:360px;text-align:center}
+.gate-box h2{color:#F5C120;font-size:1.1rem;margin-bottom:0.25rem;letter-spacing:0.05em}
+.gate-box p{color:rgba(255,255,255,0.45);font-size:0.8rem;margin-bottom:1.5rem}
+input{width:100%;padding:0.7rem 0.9rem;background:#111117;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:0.9rem;outline:none;color-scheme:dark}
+input:focus{border-color:#F5C120}
+.btn{padding:0.75rem 1.25rem;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:0.875rem;transition:opacity 0.15s}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+.btn-orange{background:#E87B2F;color:#fff;width:100%;margin-top:0.875rem}
 .btn-green{background:#2ECC71;color:#fff}
+.btn-red{background:#E74C3C;color:#fff}
 .btn-yellow{background:#F5C120;color:#000}
-.btn-red{background:rgba(231,76,60,.18);color:#E74C3C;border:1px solid rgba(231,76,60,.3)}
-.btn-gray{background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1)}
-.btn-sm{padding:.25rem .6rem;font-size:.72rem}
-/* Layout */
-#app{display:none;min-height:100vh}
-.topbar{background:#111117;border-bottom:1px solid rgba(255,255,255,.08);padding:.875rem 1.5rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
-.topbar h1{color:#F5C120;font-size:.95rem;font-weight:800;letter-spacing:.06em}
-.page{max-width:1000px;margin:0 auto;padding:1.5rem}
+.btn-gray{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.15)}
+/* Main */
+#main{display:none}
+.nav{background:#111117;border-bottom:1px solid rgba(255,255,255,0.08);padding:0.875rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+.nav-title{color:#F5C120;font-weight:800;font-size:0.95rem;letter-spacing:0.06em}
+.nav-logout{background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);padding:0.35rem 0.75rem;border-radius:8px;cursor:pointer;font-size:0.75rem}
+.content{max-width:1100px;margin:0 auto;padding:1.5rem}
 /* Stats */
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:.65rem;margin-bottom:1.5rem}
-.stat{background:#1a1a22;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:.875rem;text-align:center}
-.stat .v{font-size:1.75rem;font-weight:900;line-height:1;margin-bottom:.15rem}
-.stat .l{font-size:.65rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.04em}
-/* Cards */
-.card{background:#1a1a22;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1rem}
-.card-title{font-size:.8rem;font-weight:700;color:#F5C120;letter-spacing:.05em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:0.75rem;margin-bottom:1.5rem}
+.stat-card{background:#1a1a22;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:1rem;text-align:center}
+.stat-card .num{font-size:2rem;font-weight:900;line-height:1;margin-bottom:0.3rem}
+.stat-card .lbl{font-size:0.68rem;color:rgba(255,255,255,0.45);letter-spacing:0.04em;text-transform:uppercase}
 /* Create form */
-.create-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem}
-.create-grid .span2{grid-column:span 2}
-.create-grid .span3{grid-column:1/-1}
-/* Step indicator */
-.steps{display:flex;gap:0;margin-bottom:1.25rem}
-.step{flex:1;text-align:center;padding:.5rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:.75rem;color:rgba(255,255,255,.4);position:relative}
-.step:first-child{border-radius:8px 0 0 8px}
-.step:last-child{border-radius:0 8px 8px 0}
-.step.done{background:rgba(46,204,113,.12);border-color:rgba(46,204,113,.3);color:#2ECC71}
-.step.active{background:rgba(232,123,47,.15);border-color:#E87B2F;color:#E87B2F;font-weight:700}
-/* Table */
-.tbl-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:.82rem}
-th{text-align:left;padding:.5rem .875rem;color:rgba(255,255,255,.3);font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.08)}
-td{padding:.65rem .875rem;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle}
-tr:last-child td{border-bottom:none}
-/* Status badges */
-.badge{display:inline-block;padding:.15rem .55rem;border-radius:20px;font-size:.7rem;font-weight:700}
-.b-paid{background:rgba(46,204,113,.15);color:#2ECC71}
-.b-trial{background:rgba(245,193,32,.15);color:#F5C120}
-.b-blocked{background:rgba(231,76,60,.15);color:#E74C3C}
-.b-expired{background:rgba(255,255,255,.06);color:rgba(255,255,255,.3)}
-.b-none{background:rgba(255,255,255,.04);color:rgba(255,255,255,.25)}
-.kcode{font-family:monospace;font-size:.8rem;background:rgba(245,193,32,.1);color:#F5C120;padding:.12rem .45rem;border-radius:4px;letter-spacing:.04em}
-/* Info/warning boxes */
-.info{background:rgba(245,193,32,.08);border:1px solid rgba(245,193,32,.2);border-radius:8px;padding:.65rem .875rem;font-size:.8rem;color:rgba(255,255,255,.7);line-height:1.5;margin-bottom:.875rem}
-.success-box{background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.25);border-radius:10px;padding:1.25rem;text-align:center;margin-bottom:1rem}
-.err{color:#E74C3C;font-size:.8rem;background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.25);border-radius:8px;padding:.6rem .875rem;margin-top:.5rem;display:none}
+.section{background:#1a1a22;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:1.25rem;margin-bottom:1.25rem}
+.section-title{color:#F5C120;font-size:0.8rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.875rem;display:flex;align-items:center;gap:0.5rem}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem}
+.form-grid .full{grid-column:1/-1}
+label.lbl{display:block;font-size:0.68rem;color:rgba(255,255,255,0.45);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:0.3rem}
+select{width:100%;padding:0.7rem 0.9rem;background:#111117;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:0.875rem;outline:none;color-scheme:dark;cursor:pointer}
+select:focus{border-color:#F5C120}
+textarea{width:100%;padding:0.7rem 0.9rem;background:#111117;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:0.875rem;outline:none;resize:none;color-scheme:dark}
+.info-box{background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.25);border-radius:8px;padding:0.75rem 1rem;margin-bottom:0.875rem;font-size:0.78rem;color:rgba(46,204,113,0.9);line-height:1.6}
+/* List */
+.list-header{display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.875rem}
+.filter-btn{padding:0.35rem 0.75rem;border-radius:20px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);cursor:pointer;font-size:0.75rem;font-weight:500;transition:all 0.15s}
+.filter-btn.active{border-color:#F5C120;background:rgba(245,193,32,0.15);color:#F5C120;font-weight:700}
+.firebase-count{font-size:0.72rem;color:rgba(255,255,255,0.35);margin-left:auto}
+.search-wrap{position:relative}
+.search-wrap input{padding:0.4rem 0.75rem;width:180px;font-size:0.78rem}
+table{width:100%;border-collapse:collapse;font-size:0.82rem}
+thead tr{background:rgba(255,255,255,0.04)}
+th{padding:0.6rem 0.875rem;text-align:left;color:rgba(255,255,255,0.45);font-size:0.7rem;letter-spacing:0.04em;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.08)}
+td{padding:0.65rem 0.875rem;border-bottom:1px solid rgba(255,255,255,0.05)}
+.branch-name{font-weight:700;color:rgba(255,255,255,0.9)}
+.lic-key{font-family:monospace;font-size:0.78rem;color:#F5C120;display:inline-flex;align-items:center;gap:0.35rem}
+.copy-btn{background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:0.75rem;padding:0}
+.copy-btn:hover{color:#F5C120}
+.badge{display:inline-block;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.7rem;font-weight:700;border:1px solid}
+.badge-active{background:rgba(46,204,113,0.15);color:#2ECC71;border-color:rgba(46,204,113,0.3)}
+.badge-trial{background:rgba(245,193,32,0.15);color:#F5C120;border-color:rgba(245,193,32,0.3)}
+.badge-blocked{background:rgba(231,76,60,0.15);color:#E74C3C;border-color:rgba(231,76,60,0.3)}
+.badge-expired{background:rgba(107,114,128,0.2);color:#9CA3AF;border-color:rgba(107,114,128,0.3)}
+.days-left{font-size:0.7rem;color:rgba(255,255,255,0.4);margin-top:0.15rem}
+.days-warn{color:#F59E0B}
+.days-ok{color:#2ECC71}
+.days-dead{color:#E74C3C}
+.action-btns{display:flex;gap:0.3rem}
+.icon-btn{width:28px;height:28px;border-radius:6px;border:none;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;justify-content:center;transition:opacity 0.15s}
+.icon-btn:hover{opacity:0.8}
+.empty-state{text-align:center;padding:3rem;color:rgba(255,255,255,0.35)}
+.empty-state .icon{font-size:2.5rem;margin-bottom:0.5rem}
 /* Modal */
-.mbg{position:fixed;inset:0;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;z-index:50;padding:1rem}
-.mbg.show{display:flex}
-.modal{background:#1a1a22;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:1.5rem;width:100%;max-width:440px}
-.modal h3{color:#F5C120;margin-bottom:1.25rem;font-size:1rem}
-.modal-btns{display:flex;gap:.6rem;margin-top:1rem}
-/* Days colors */
-.d-ok{color:rgba(255,255,255,.35)} .d-warn{color:#F5C120} .d-crit{color:#E74C3C}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:100;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal{background:#1a1a22;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:1.5rem;width:100%;max-width:440px;max-height:90vh;overflow-y:auto}
+.modal-title{color:#F5C120;font-weight:800;font-size:1rem;margin-bottom:1.25rem;display:flex;justify-content:space-between;align-items:center}
+.close-btn{background:rgba(255,255,255,0.08);border:none;color:rgba(255,255,255,0.5);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem}
+.modal-footer{display:flex;gap:0.6rem;margin-top:1rem}
+.error-msg{color:#E74C3C;font-size:0.8rem;text-align:center;background:rgba(231,76,60,0.1);padding:0.5rem;border-radius:8px;margin-top:0.5rem}
+.success-msg{color:#2ECC71;font-size:0.8rem;text-align:center;background:rgba(46,204,113,0.1);padding:0.5rem;border-radius:8px;margin-top:0.5rem}
+.link-box{background:#111117;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem;margin-top:0.75rem;word-break:break-all;font-size:0.78rem;color:rgba(255,255,255,0.7)}
+.link-box b{color:#F5C120;display:block;margin-bottom:0.3rem;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.04em}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div class="login" id="loginDiv">
-  <div class="lcard">
-    <div style="font-size:2.5rem;margin-bottom:.5rem">🍽️</div>
-    <h1>РЕСТОРАН СИСТЕМ</h1>
-    <p style="color:rgba(255,255,255,.38);font-size:.8rem;margin:.25rem 0 1.75rem">Удирдлагын хуудас</p>
-    <input type="password" id="pw" placeholder="Нууц үг" style="margin-bottom:.75rem" onkeydown="if(event.key==='Enter')doLogin()"/>
-    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:.75rem" onclick="doLogin()">Нэвтрэх</button>
-    <p id="perr" style="color:#E74C3C;font-size:.8rem;margin-top:.75rem;display:none">Нууц үг буруу</p>
+<!-- Password Gate -->
+<div id="gate">
+  <div class="gate-box">
+    <div style="font-size:2rem;margin-bottom:0.5rem">🔐</div>
+    <h2>РЕСТОРАН СИСТЕМ</h2>
+    <p>Удирдлагын хуудас — нууц үг оруулна уу</p>
+    <input type="password" id="gatePin" placeholder="Нууц үг" onkeydown="if(event.key==='Enter')checkGate()"/>
+    <div id="gateErr" class="error-msg hidden" style="margin-top:0.6rem"></div>
+    <button class="btn btn-orange" onclick="checkGate()">Нэвтрэх</button>
   </div>
 </div>
 
-<!-- APP -->
-<div id="app">
-  <div class="topbar">
-    <h1>🍽️ РЕСТОРАН СИСТЕМ — Удирдлагын хуудас</h1>
-    <button class="btn btn-gray btn-sm" onclick="doLogout()">↪ Гарах</button>
+<!-- Main UI -->
+<div id="main">
+  <div class="nav">
+    <span class="nav-title">🍽️ РЕСТОРАН СИСТЕМ — Удирдлагын хуудас</span>
+    <button class="nav-logout" onclick="logout()">↪ Гарах</button>
   </div>
-  <div class="page">
+  <div class="content">
 
-    <!-- STATS -->
+    <!-- Stats -->
     <div class="stats">
-      <div class="stat"><div class="v" id="sAll" style="color:#F5C120">0</div><div class="l">Нийт байршил</div></div>
-      <div class="stat"><div class="v" id="sPaid" style="color:#2ECC71">0</div><div class="l">Төлсөн</div></div>
-      <div class="stat"><div class="v" id="sTrial" style="color:#F5C120">0</div><div class="l">Туршилт</div></div>
-      <div class="stat"><div class="v" id="sWarn" style="color:#E87B2F">0</div><div class="l">7 хоногт дуусна</div></div>
-      <div class="stat"><div class="v" id="sBlk" style="color:#E74C3C">0</div><div class="l">Хаагдсан/Дууссан</div></div>
+      <div class="stat-card"><div class="num" id="s-total" style="color:#F5C120">0</div><div class="lbl">Нийт байршил</div></div>
+      <div class="stat-card"><div class="num" id="s-active" style="color:#2ECC71">0</div><div class="lbl">Төлсөн</div></div>
+      <div class="stat-card"><div class="num" id="s-trial" style="color:#F5C120">0</div><div class="lbl">Туршилт</div></div>
+      <div class="stat-card"><div class="num" id="s-expiring" style="color:#F59E0B">0</div><div class="lbl">7 хоногт дуусна</div></div>
+      <div class="stat-card"><div class="num" id="s-dead" style="color:#E74C3C">0</div><div class="lbl">Хаагдсан/Дууссан</div></div>
     </div>
 
-
-    <!-- CREATE FORM -->
-    <div class="card">
-      <div class="card-title">➕ Шинэ байршил + лиценз үүсгэх</div>
-      <div style="background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2);border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem;font-size:.8rem;color:rgba(255,255,255,.7);line-height:1.6">
+    <!-- Create Form -->
+    <div class="section">
+      <div class="section-title">➕ Шинэ байршил + Лиценз үүсгэх</div>
+      <div class="info-box">
         ✅ Нэг товчоор байршил + лиценз нэгэн зэрэг үүсч, автоматаар холбогдоно.<br>
         Менежерт <b>лицензийн түлхүүр</b> болон <b>нэвтрэх сайтын линк</b> өгнө.
       </div>
-      <div class="create-grid">
-        <div class="span3"><label>Ресторан / Салбарын нэр *</label><input id="cName" placeholder="Galbi-2 салбар"/></div>
-        <div><label>Эзэмшигч</label><input id="cOwner" placeholder="Батболд"/></div>
-        <div><label>Утас</label><input id="cPhone" placeholder="99001234" maxlength="8"/></div>
-        <div><label>Хугацаа</label>
-          <select id="cDur" onchange="calcEnd()">
-            <option value="14">🟡 Туршилт — 14 хоног</option>
-            <option value="30">🟢 Төлсөн — 1 сар</option>
-            <option value="90">🟢 Төлсөн — 3 сар</option>
-            <option value="180">🟢 Төлсөн — 6 сар</option>
-            <option value="365">🟢 Төлсөн — 1 жил</option>
+      <div class="form-grid">
+        <div class="full">
+          <label class="lbl">Ресторан / Салбарын нэр *</label>
+          <input id="f-name" placeholder="Жишээ: Галби Ресторан - 1-р салбар"/>
+        </div>
+        <div>
+          <label class="lbl">Эзэмшигч</label>
+          <input id="f-owner" placeholder="Батболд"/>
+        </div>
+        <div>
+          <label class="lbl">Утас</label>
+          <input id="f-phone" placeholder="99001234" inputmode="numeric"/>
+        </div>
+        <div>
+          <label class="lbl">Хугацаа</label>
+          <select id="f-plan" onchange="calcEnd()">
+            <option value="trial_7">🟡 Туршилт — 7 хоног</option>
+            <option value="trial_14" selected>🟡 Туршилт — 14 хоног</option>
+            <option value="trial_30">🟡 Туршилт — 30 хоног</option>
+            <option value="monthly">💳 1 сар (Сарын)</option>
+            <option value="monthly3">💳 3 сар</option>
+            <option value="monthly6">💳 6 сар</option>
+            <option value="yearly">💰 1 жил (Жилийн)</option>
           </select>
         </div>
-        <div><label>Эхлэх огноо</label><input type="date" id="cStart" onchange="calcEnd()"/></div>
-        <div><label>Дуусах огноо (автомат)</label><input type="date" id="cEnd" readonly style="opacity:.5"/></div>
-        <div class="span3"><label>Тэмдэглэл</label><input id="cNote" placeholder="Нэмэлт тайлбар..."/></div>
-      </div>
-      <div id="createErr" class="err" style="display:none;margin-top:.5rem"></div>
-      <div id="createProgress" style="color:rgba(255,255,255,.45);font-size:.82rem;margin-top:.5rem;display:none">⏳ Үүсгэж байна...</div>
-      <div style="margin-top:.875rem;display:flex;gap:.75rem;align-items:center">
-        <button class="btn btn-primary" onclick="createAll()" style="padding:.7rem 1.5rem">✅ Байршил + Лиценз үүсгэх</button>
-        <span id="newKey" style="font-family:monospace;color:#2ECC71;font-size:.9rem;font-weight:700"></span>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════════════
-         БАЙРШЛЫН ЖАГСААЛТ
-    ══════════════════════════════════════ -->
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-        <div class="card-title" style="margin:0">📋 Байршлын жагсаалт</div>
-        <div style="display:flex;gap:.4rem;align-items:center">
-          <input id="srch" placeholder="🔍 Хайх..." style="width:180px;padding:.35rem .7rem;font-size:.78rem" oninput="render()"/>
+        <div>
+          <label class="lbl">Эхлэх огноо</label>
+          <input type="date" id="f-start" onchange="calcEnd()"/>
+        </div>
+        <div>
+          <label class="lbl">Дуусах огноо (автомат)</label>
+          <input type="date" id="f-end" readonly style="opacity:0.6"/>
+        </div>
+        <div>
+          <label class="lbl">Менежерийн PIN *</label>
+          <input id="f-pin" placeholder="4+ тоо" inputmode="numeric" maxlength="8"/>
+        </div>
+        <div>
+          <label class="lbl">Тэмдэглэл</label>
+          <input id="f-note" placeholder="Нэмэлт тайлбар..."/>
         </div>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
-        <div id="filterRow" style="display:flex;gap:.4rem;flex-wrap:wrap"></div>
-        <div style="display:flex;gap:.4rem;align-items:center">
-          <span id="dbCount" style="color:rgba(255,255,255,.3);font-size:.72rem"></span>
-          <button class="btn btn-gray btn-sm" onclick="manualRefresh()">🔄 Шинэчлэх</button>
+      <div id="create-err" class="error-msg hidden" style="margin-top:0.75rem"></div>
+      <div id="create-success" class="hidden" style="margin-top:0.75rem"></div>
+      <button class="btn btn-orange" onclick="createBranchAndLicense()" id="create-btn" style="margin-top:0.875rem;width:100%">✅ Байршил + Лиценз үүсгэх</button>
+    </div>
+
+    <!-- Branch List -->
+    <div class="section">
+      <div class="section-title">🏢 Байршлын жагсаалт</div>
+      <div class="list-header">
+        <button class="filter-btn active" data-f="all" onclick="setFilter('all',this)">Бүгд</button>
+        <button class="filter-btn" data-f="active" onclick="setFilter('active',this)">● Төлсөн</button>
+        <button class="filter-btn" data-f="trial" onclick="setFilter('trial',this)">● Туршилт</button>
+        <button class="filter-btn" data-f="blocked" onclick="setFilter('blocked',this)">● Хаагдсан</button>
+        <button class="filter-btn" data-f="expired" onclick="setFilter('expired',this)">● Дууссан</button>
+        <span class="firebase-count" id="count-label">Firebase: 0 бичилт</span>
+        <div class="search-wrap">
+          <input id="search-input" placeholder="🔍 Хайх..." oninput="renderList()" style="width:150px;padding:0.35rem 0.65rem;font-size:0.75rem"/>
         </div>
       </div>
-      <div class="tbl-wrap">
-        <table>
-          <thead><tr>
-            <th>Байршлын нэр</th>
-            <th>Лицензийн түлхүүр</th>
-            <th>Эзэмшигч / Утас</th>
-            <th>Статус</th>
-            <th>Дуусах огноо</th>
-            <th>Үйлдэл</th>
-          </tr></thead>
-          <tbody id="tbl"></tbody>
-        </table>
+      <div id="list-container">
+        <div class="empty-state"><div class="icon">⏳</div><div>Ачаалж байна...</div></div>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- EDIT MODAL -->
-<div class="mbg" id="editMdl">
+<!-- Edit Modal -->
+<div class="overlay hidden" id="edit-modal">
   <div class="modal">
-    <h3>✏️ Лиценз засах / удирдах</h3>
-    <input type="hidden" id="eKey"/>
-    <label>Байршлын нэр</label><input id="eName" style="margin-bottom:.1rem"/>
-    <label>Эзэмшигч</label><input id="eOwner" style="margin-bottom:.1rem"/>
-    <label>Утас</label><input id="ePhone" style="margin-bottom:.1rem"/>
-    <label>Статус</label>
-    <select id="eSt" style="margin-bottom:.1rem">
-      <option value="paid">🟢 Төлсөн</option>
-      <option value="trial">🟡 Туршилт</option>
-      <option value="blocked">⛔ Хаагдсан</option>
-      <option value="expired">🔴 Дууссан</option>
-    </select>
-    <label>Дуусах огноо</label><input type="date" id="eEnd" style="margin-bottom:.1rem"/>
-    <label>Тэмдэглэл</label><input id="eNote"/>
-    <div id="editErr" class="err"></div>
-    <div class="modal-btns">
-      <button class="btn btn-gray" onclick="closeModal('editMdl')">Болих</button>
-      <button class="btn btn-red btn-sm" onclick="delItem()">🗑 Устгах</button>
-      <button class="btn btn-green" onclick="saveEdit()">💾 Хадгалах</button>
+    <div class="modal-title">
+      <span>✏️ Лиценз засах</span>
+      <button class="close-btn" onclick="closeModal('edit-modal')">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:0.75rem">
+      <div><label class="lbl">Байршлын нэр</label><input id="e-name"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+        <div><label class="lbl">Эзэмшигч</label><input id="e-owner"/></div>
+        <div><label class="lbl">Утас</label><input id="e-phone"/></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+        <div><label class="lbl">Статус</label>
+          <select id="e-status">
+            <option value="trial">Туршилт</option>
+            <option value="active">Төлсөн (Идэвхтэй)</option>
+            <option value="blocked">Хаагдсан</option>
+            <option value="expired">Дууссан</option>
+          </select>
+        </div>
+        <div><label class="lbl">Дуусах огноо</label><input type="date" id="e-end"/></div>
+      </div>
+      <div><label class="lbl">Менежерийн PIN (хоосон = өөрчлөхгүй)</label><input id="e-pin" placeholder="4+ тоо" inputmode="numeric"/></div>
+      <div><label class="lbl">Тэмдэглэл</label><input id="e-note"/></div>
+    </div>
+    <div id="edit-err" class="error-msg hidden"></div>
+    <div class="modal-footer">
+      <button class="btn btn-gray" onclick="closeModal('edit-modal')" style="flex:1">Болих</button>
+      <button class="btn btn-orange" onclick="saveEdit()" style="flex:2" id="save-edit-btn">✅ Хадгалах</button>
     </div>
   </div>
 </div>
 
-<!-- EXTEND MODAL -->
-<div class="mbg" id="extMdl">
-  <div class="modal">
-    <h3>⏳ Лиценз сунгах</h3>
-    <input type="hidden" id="extKey"/>
-    <p id="extInfo" style="color:rgba(255,255,255,.6);font-size:.85rem;margin-bottom:1rem"></p>
-    <label>Нэмэх хугацаа</label>
-    <select id="extDays" style="margin-bottom:.1rem">
-      <option value="14">+ 14 хоног</option>
-      <option value="30">+ 1 сар</option>
-      <option value="90">+ 3 сар</option>
-      <option value="180">+ 6 сар</option>
-      <option value="365">+ 1 жил</option>
-    </select>
-    <div class="modal-btns">
-      <button class="btn btn-gray" onclick="closeModal('extMdl')">Болих</button>
-      <button class="btn btn-green" onclick="doExtend()">✅ Сунгах</button>
+<!-- Delete Confirm Modal -->
+<div class="overlay hidden" id="del-modal">
+  <div class="modal" style="max-width:320px;text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:0.75rem">🗑️</div>
+    <p style="font-weight:800;color:#fff;margin-bottom:0.5rem">Устгах уу?</p>
+    <p style="color:rgba(255,255,255,0.5);font-size:0.85rem;margin-bottom:1.25rem">Байршил болон лиценз хоёулаа устана. Буцааж болохгүй.</p>
+    <div class="modal-footer">
+      <button class="btn btn-gray" onclick="closeModal('del-modal')" style="flex:1">Болих</button>
+      <button class="btn btn-red" onclick="confirmDelete()" style="flex:1" id="del-btn">Устгах</button>
     </div>
   </div>
 </div>
 
-<script>
-/* ════ CONFIG ════════════════════════════════════════ */
-const PASS='Aquarius2026';
-const FB={apiKey:'AIzaSyCaMrXWbpZ2PWAz0n7Pg3BSfQlbWKmUIp0',databaseURL:'https://restaurant-system-6fb57-default-rtdb.asia-southeast1.firebasedatabase.app'};
-const APP_URL='https://res-menu-ashy-two.vercel.app/';
-const SEED_MENU=[
-  {name:'Цуйван',description:'Гурилтай шарсан мах',price:12000,category:'Үндсэн хоол',image:'',available:true,allergens:'Гурил'},
-  {name:'Хуушуур',description:'4 ширхэг шарсан',price:8000,category:'Үндсэн хоол',image:'',available:true,allergens:'Гурил'},
-  {name:'Банштай шөл',description:'Уламжлалт банш',price:9000,category:'Шөл',image:'',available:true,allergens:''},
-  {name:'Кофе',description:'Хос эспрессо',price:4500,category:'Ундаа',image:'',available:true,allergens:''},
-];
-const SEED_CATS=['Үндсэн хоол','Шөл','Ундаа'];
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js';
+import { getDatabase, ref, onValue, push, set, update, remove, get } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js';
 
-/* ════ STATE ════════════════════════════════════════ */
-let db,rows=[],curF='all',lastKey='';
+const firebaseConfig = {
+  apiKey: "AIzaSyCaMrXWbpZ2PWAz0n7Pg3BSfQlbWKmUIp0",
+  authDomain: "restaurant-system-6fb57.firebaseapp.com",
+  databaseURL: "https://restaurant-system-6fb57-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "restaurant-system-6fb57",
+  storageBucket: "restaurant-system-6fb57.firebasestorage.app",
+  messagingSenderId: "423284471398",
+  appId: "1:423284471398:web:1040e86fa3fe373e7c5fa7"
+};
 
-/* ════ LOGIN / LOGOUT ════════════════════════════════ */
-function doLogin(){
-  if(document.getElementById('pw').value!==PASS){document.getElementById('perr').style.display='block';return;}
-  document.getElementById('loginDiv').style.display='none';
-  document.getElementById('app').style.display='block';
-  if(!firebase.apps.length)firebase.initializeApp(FB);
-  db=firebase.database();
-    initDate();
-  // Load licenses once (avoid on() race condition)
-  loadLicenses();
-}
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
+// ── State ──
+window._licenses = {};
+window._branches = {};
+window._filter = 'all';
+window._editKey = null;
+window._deleteKey = null;
+window._deleteBranchId = null;
 
-
-function doLogout(){location.reload();}
-
-function calcEnd(){
-  const days=parseInt(document.getElementById('cDur').value)||14;
-  const s=document.getElementById('cStart').value;
-  if(!s)return;
-  const d=new Date(s);d.setDate(d.getDate()+days);
-  document.getElementById('cEnd').value=d.toISOString().slice(0,10);
-}
-
-async function createAll(){
-  const name=document.getElementById('cName').value.trim();
-  const errEl=document.getElementById('createErr');
-  const prog=document.getElementById('createProgress');
-  errEl.style.display='none';
-  if(!name){errEl.textContent='Байршлын нэр оруулна уу';errEl.style.display='block';return;}
-  const startStr=document.getElementById('cStart').value;
-  const endStr=document.getElementById('cEnd').value;
-  const dur=parseInt(document.getElementById('cDur').value)||14;
-  prog.style.display='block';prog.textContent='⏳ 1/4 Байршил үүсгэж байна...';
-  try{
-    const bRef=db.ref('branches').push();
-    const bid=bRef.key;
-    await bRef.set({name,address:'',createdAt:Date.now()});
-    prog.textContent='⏳ 2/4 Цэс нэмж байна...';
-    for(const item of SEED_MENU)await db.ref('branches/'+bid+'/menu').push({...item,createdAt:Date.now()});
-    let so=Date.now();
-    for(const cat of SEED_CATS)await db.ref('branches/'+bid+'/categories').push({name:cat,visible:true,sortOrder:so++});
-    for(let t=1;t<=5;t++)await db.ref('branches/'+bid+'/tables').push({number:t,status:'available'});
-    prog.textContent='⏳ 3/4 Лиценз үүсгэж байна...';
-    const key=genKey();
-    const licData={branchName:name,branchId:bid,ownerName:document.getElementById('cOwner').value.trim()||'—',phone:document.getElementById('cPhone').value.trim()||'',status:dur<=14?'trial':'paid',startDate:new Date(startStr).getTime(),endDate:new Date(endStr).getTime(),createdAt:Date.now(),note:document.getElementById('cNote').value.trim()||''};
-    await db.ref('licenses/'+key).set(licData);
-    prog.textContent='⏳ 4/4 Холбож байна...';
-    await db.ref('branches/'+bid+'/licenseKey').set(key);
-    prog.style.display='none';
-    const el=document.getElementById('newKey');
-    el.textContent='✅ '+key;
-    el.title='Менежерт өгөх түлхүүр';
-    setTimeout(()=>el.textContent='',20000);
-    ['cName','cOwner','cPhone','cNote'].forEach(id=>document.getElementById(id).value='');
-    // Wait for Firebase to propagate, then refresh
-    setTimeout(()=>{
-      db.ref('licenses').once('value').then(snap=>{
-        rows=[];
-        if(snap.exists())snap.forEach(c=>rows.push({key:c.key,...c.val()}));
-        updateStats();render();
-      });
-    },1000);
-    showToast('✅ '+name+' амжилттай үүслээ!');
-  }catch(e){
-    prog.style.display='none';
-    errEl.textContent='Алдаа: '+e.message;
-    errEl.style.display='block';
+// ── Gate ──
+window.checkGate = function() {
+  const v = document.getElementById('gatePin').value;
+  if(v === 'Aquarius2026') {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('main').style.display = 'block';
+    initApp();
+  } else {
+    const e = document.getElementById('gateErr');
+    e.textContent = 'Нууц үг буруу'; e.classList.remove('hidden');
   }
-}
+};
+window.logout = function() {
+  document.getElementById('gate').style.display = 'flex';
+  document.getElementById('main').style.display = 'none';
+  document.getElementById('gatePin').value = '';
+};
 
+// ── Init ──
+function initApp() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('f-start').value = today;
+  calcEnd();
 
+  // Real-time licenses listener
+  onValue(ref(db, 'licenses'), snap => {
+    window._licenses = snap.exists() ? snap.val() : {};
+    updateStats();
+    renderList();
+  });
 
-
-function loadLicenses(){
-  db.ref('licenses').on('value',snap=>{
-    rows=[];
-    if(snap.exists())snap.forEach(c=>rows.push({key:c.key,...c.val()}));
-    const cnt=document.getElementById('dbCount');
-    if(cnt)cnt.textContent='Firebase: '+rows.length+' бичилт';
-    updateStats();render();
+  // Real-time branches listener (for names)
+  onValue(ref(db, 'branches'), snap => {
+    window._branches = snap.exists() ? snap.val() : {};
+    updateStats();
+    renderList();
   });
 }
-function manualRefresh(){
-  const btn=event.currentTarget||event.target;
-  btn.textContent='⏳';btn.disabled=true;
-  db.ref('licenses').once('value').then(snap=>{
-    rows=[];
-    if(snap.exists())snap.forEach(c=>rows.push({key:c.key,...c.val()}));
-    const cnt=document.getElementById('dbCount');
-    if(cnt)cnt.textContent='Firebase: '+rows.length+' бичилт · '+new Date().toLocaleTimeString('mn-MN');
-    updateStats();render();
-    btn.textContent='🔄 Шинэчлэх';btn.disabled=false;
-    showToast('✓ '+rows.length+' байршил');
-  }).catch(e=>{btn.textContent='🔄 Шинэчлэх';btn.disabled=false;});
+
+// ── Helpers ──
+function genKey() {
+  const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let k='RES-';
+  for(let i=0;i<4;i++) k+=c[Math.floor(Math.random()*c.length)];
+  k+='-';
+  for(let i=0;i<4;i++) k+=c[Math.floor(Math.random()*c.length)];
+  return k;
 }
 
-/* ════ DATE HELPERS ════════════════════════════════ */
-function initDate(){
-  const t=new Date().toISOString().slice(0,10);
-  document.getElementById('cStart').value=t;
-  calcEnd();
-}
-function calcEnd(){
-  const days=parseInt(document.getElementById('cDur').value)||14;
-  const s=document.getElementById('cStart').value;
-  if(!s)return;
-  const d=new Date(s);d.setDate(d.getDate()+days);
-  document.getElementById('cEnd').value=d.toISOString().slice(0,10);
-}
-function genKey(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';const s=()=>Array.from({length:4},()=>c[Math.floor(Math.random()*c.length)]).join('');return`RES-${s()}-${s()}-${s()}`;}
-function dl(e){return Math.ceil((e-Date.now())/86400000);}
-function effSt(r){if(r.status==='blocked')return'blocked';if(r.status==='expired'||dl(r.endDate)<=0)return'expired';return r.status;}
+const PLAN_DAYS = {
+  trial_7: 7, trial_14: 14, trial_30: 30,
+  monthly: 30, monthly3: 90, monthly6: 180, yearly: 365
+};
+const PLAN_STATUS = {
+  trial_7: 'trial', trial_14: 'trial', trial_30: 'trial',
+  monthly: 'active', monthly3: 'active', monthly6: 'active', yearly: 'active'
+};
 
-/* ════ CREATE ALL (branch + license + link) ════════ */
+window.calcEnd = function() {
+  const start = document.getElementById('f-start').value;
+  const plan = document.getElementById('f-plan').value;
+  if(!start) return;
+  const days = PLAN_DAYS[plan] || 14;
+  const d = new Date(start);
+  d.setDate(d.getDate() + days);
+  document.getElementById('f-end').value = d.toISOString().split('T')[0];
+};
 
-
-function copyKey(key){
-  copyToClipboard(key,'Түлхүүр хуулагдлаа ✓');
-}
-function copyToClipboard(text,msg){
-  if(navigator.clipboard&&window.isSecureContext){
-    navigator.clipboard.writeText(text).then(()=>{showToast(msg);}).catch(()=>fallbackCopy(text,msg));
-  }else{fallbackCopy(text,msg);}
-}
-function fallbackCopy(text,msg){
-  const ta=document.createElement('textarea');
-  ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
-  document.body.appendChild(ta);ta.focus();ta.select();
-  try{document.execCommand('copy');showToast(msg);}catch{alert('Гараар хуулна уу:\n'+text);}
-  document.body.removeChild(ta);
-}
-function showToast(msg){
-  let t=document.getElementById('toast');
-  if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#2ECC71;color:#000;padding:.65rem 1.5rem;border-radius:20px;font-weight:700;font-size:.875rem;z-index:999;transition:opacity .3s';document.body.appendChild(t);}
-  t.textContent=msg;t.style.opacity='1';
-  setTimeout(()=>{t.style.opacity='0';},2500);
+function daysLeft(expiresAt) {
+  return Math.ceil((expiresAt - Date.now()) / 86400000);
 }
 
-/* ════ STATS ════════════════════════════════════════ */
-function updateStats(){
-  let all=0,paid=0,trial=0,warn=0,blk=0;
-  rows.forEach(r=>{all++;const s=effSt(r);if(s==='paid')paid++;else if(s==='trial')trial++;if(s==='blocked'||s==='expired')blk++;if(s!=='blocked'&&s!=='expired'&&dl(r.endDate)>0&&dl(r.endDate)<=7)warn++;});
-  [{id:'sAll',v:all},{id:'sPaid',v:paid},{id:'sTrial',v:trial},{id:'sWarn',v:warn},{id:'sBlk',v:blk}].forEach(x=>document.getElementById(x.id).textContent=x.v);
+function getEffectiveStatus(lic) {
+  if(lic.status === 'blocked') return 'blocked';
+  const dl = daysLeft(lic.expiresAt || lic.endDate || 0);
+  if(dl <= 0) return 'expired';
+  return lic.status || 'trial';
 }
 
-/* ════ RENDER TABLE ════════════════════════════════ */
-const sLabel={paid:'Төлсөн',trial:'Туршилт',blocked:'Хаагдсан',expired:'Дууссан'};
-const sCls={paid:'b-paid',trial:'b-trial',blocked:'b-blocked',expired:'b-expired'};
-
-// Build filter buttons once
-function buildFilters(){
-  const fr=document.getElementById('filterRow');
-  const filters=[['all','Бүгд'],['paid','🟢 Төлсөн'],['trial','🟡 Туршилт'],['blocked','⛔ Хаагдсан'],['expired','🔴 Дууссан']];
-  fr.innerHTML=filters.map(([k,l])=>`<button onclick="setF('${k}',this)" class="fbtn${k==='all'?' on':''}" style="padding:.28rem .7rem;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.4);cursor:pointer;font-size:.76rem;font-weight:500">${l}</button>`).join('');
-}
-function setF(f,btn){
-  curF=f;
-  document.querySelectorAll('.fbtn').forEach(b=>{b.style.borderColor='rgba(255,255,255,.1)';b.style.background='transparent';b.style.color='rgba(255,255,255,.4)';b.style.fontWeight='500';});
-  btn.style.borderColor='#F5C120';btn.style.background='rgba(245,193,32,.12)';btn.style.color='#F5C120';btn.style.fontWeight='700';
-  render();
+function getBadge(status) {
+  const map = {
+    active: '<span class="badge badge-active">● Төлсөн</span>',
+    trial: '<span class="badge badge-trial">● Туршилт</span>',
+    blocked: '<span class="badge badge-blocked">● Хаагдсан</span>',
+    expired: '<span class="badge badge-expired">● Дууссан</span>',
+  };
+  return map[status] || '<span class="badge badge-expired">● Тодорхойгүй</span>';
 }
 
-function render(){
-  const q=(document.getElementById('srch').value||'').toLowerCase();
-  const list=rows.filter(r=>{
-    const s=effSt(r);
-    if(curF!=='all'&&s!==curF)return false;
-    if(q&&!(r.key+r.branchName+r.ownerName+(r.phone||'')+(r.note||'')).toLowerCase().includes(q))return false;
-    return true;
-  }).sort((a,b)=>b.createdAt-a.createdAt);
+// ── Stats ──
+function updateStats() {
+  const lics = Object.values(window._licenses);
+  const total = lics.length;
+  const active = lics.filter(l=>getEffectiveStatus(l)==='active').length;
+  const trial = lics.filter(l=>getEffectiveStatus(l)==='trial').length;
+  const dead = lics.filter(l=>['blocked','expired'].includes(getEffectiveStatus(l))).length;
+  const expiring = lics.filter(l=>{
+    const s=getEffectiveStatus(l);
+    if(s==='blocked'||s==='expired') return false;
+    const dl=daysLeft(l.expiresAt||l.endDate||0);
+    return dl>0&&dl<=7;
+  }).length;
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-active').textContent = active;
+  document.getElementById('s-trial').textContent = trial;
+  document.getElementById('s-expiring').textContent = expiring;
+  document.getElementById('s-dead').textContent = dead;
+  document.getElementById('count-label').textContent = `Firebase: ${total} бичилт`;
+}
 
-  const tb=document.getElementById('tbl');
-  if(!list.length){
-    tb.innerHTML=`<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,.25);padding:2.5rem">Жагсаалт хоосон байна</td></tr>`;
+// ── Render List ──
+window.renderList = function() {
+  const search = (document.getElementById('search-input')?.value||'').toLowerCase();
+  const filter = window._filter;
+
+  let entries = Object.entries(window._licenses).map(([key,lic])=>{
+    const status = getEffectiveStatus(lic);
+    const branch = lic.branchId && window._branches[lic.branchId];
+    const name = branch?.name || lic.clientName || '—';
+    return {key, lic, status, name};
+  });
+
+  if(filter !== 'all') entries = entries.filter(e=>e.status===filter);
+  if(search) entries = entries.filter(e=>
+    e.name.toLowerCase().includes(search)||
+    e.key.toLowerCase().includes(search)||
+    (e.lic.clientName||'').toLowerCase().includes(search)||
+    (e.lic.phone||'').includes(search)
+  );
+
+  entries.sort((a,b)=>((b.lic.createdAt||0)-(a.lic.createdAt||0)));
+
+  const con = document.getElementById('list-container');
+  if(!entries.length) {
+    con.innerHTML = '<div class="empty-state"><div class="icon">📋</div><div>Байршил байхгүй</div></div>';
     return;
   }
-  tb.innerHTML=list.map(r=>{
-    const s=effSt(r),d=dl(r.endDate);
-    const dc=d<=3?'d-crit':d<=7?'d-warn':'d-ok';
-    return`<tr>
-<td>
-  <b style="color:rgba(255,255,255,.9)">${r.branchName}</b>
-  ${r.note?`<br><small style="color:rgba(255,255,255,.28);font-size:.72rem">${r.note}</small>`:''}
-</td>
-<td>
-  <span class="kcode">${r.key}</span>
-  <button onclick="copyKey('${r.key}')" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.3);font-size:.75rem;margin-left:.25rem" title="Хуулах">📋</button>
-</td>
-<td style="color:rgba(255,255,255,.6);font-size:.82rem">
-  ${r.ownerName||'—'}
-  ${r.phone?`<br><span style="color:rgba(255,255,255,.35)">${r.phone}</span>`:''}
-</td>
-<td><span class="badge ${sCls[s]}">${sLabel[s]}</span></td>
-<td style="font-size:.82rem">
-  ${new Date(r.endDate).toLocaleDateString('mn-MN')}
-  ${s!=='blocked'&&s!=='expired'?`<br><small class="${dc}">${d>0?d+' хоног үлдсэн':'Дуусчээ'}</small>`:''}
-</td>
-<td>
-  <div style="display:flex;gap:.3rem;flex-wrap:wrap">
-    <button class="btn btn-yellow btn-sm" onclick="openEdit('${r.key}')">✏️</button>
-    <button class="btn btn-gray btn-sm" onclick="openExtend('${r.key}')">⏳</button>
-    ${s!=='blocked'
-      ?`<button class="btn btn-red btn-sm" onclick="quickBlock('${r.key}')">⛔</button>`
-      :`<button class="btn btn-green btn-sm" onclick="quickUnblock('${r.key}')">✅</button>`}
-    <button class="btn btn-sm" onclick="quickDelete('${r.key}','${r.branchName.replace(/'/g,"\'")}',this)" style="background:rgba(231,76,60,.15);color:#E74C3C;border:1px solid rgba(231,76,60,.25)">🗑</button>
-  </div>
-</td>
-</tr>`;
+
+  const rows = entries.map(({key,lic,status,name})=>{
+    const dl = daysLeft(lic.expiresAt||lic.endDate||0);
+    const dlClass = dl>14?'days-ok':dl>7?'days-warn':'days-dead';
+    const expDate = lic.expiresAt ? new Date(lic.expiresAt).toLocaleDateString('mn-MN') : 
+                   lic.endDate ? new Date(lic.endDate).toLocaleDateString('mn-MN') : '—';
+    const loginUrl = `https://res-menu-ashy-two.vercel.app/?b=${lic.branchId||''}`;
+
+    return `<tr>
+      <td>
+        <div class="branch-name">${name}</div>
+        <div style="font-size:0.7rem;color:rgba(255,255,255,0.35);margin-top:0.1rem">${lic.branchId?`ID: ${lic.branchId.slice(0,12)}...`:''}</div>
+      </td>
+      <td>
+        <span class="lic-key">${key}
+          <button class="copy-btn" onclick="copyText('${key}')" title="Хуулах">📋</button>
+        </span>
+      </td>
+      <td>
+        <div style="color:rgba(255,255,255,0.85)">${lic.clientName||'—'}</div>
+        <div style="font-size:0.72rem;color:rgba(255,255,255,0.4)">${lic.phone||''}</div>
+      </td>
+      <td>${getBadge(status)}</td>
+      <td>
+        <div style="font-size:0.82rem">${expDate}</div>
+        <div class="${dlClass} days-left">${dl>0?dl+' хоног үлдсэн':'Дууссан'}</div>
+      </td>
+      <td>
+        <div class="action-btns">
+          <button class="icon-btn" style="background:#F5C12022;color:#F5C120" onclick="openEdit('${key}')" title="Засах">✏️</button>
+          <button class="icon-btn" style="background:${status==='blocked'?'rgba(46,204,113,0.2)':'rgba(231,76,60,0.2)'};color:${status==='blocked'?'#2ECC71':'#E74C3C'}" onclick="toggleBlock('${key}')" title="${status==='blocked'?'Нээх':'Хаах'}">${status==='blocked'?'🔓':'🔒'}</button>
+          <button class="icon-btn" style="background:rgba(59,130,246,0.2);color:#60a5fa" onclick="copyText('${loginUrl}')" title="Линк хуулах">🔗</button>
+          <button class="icon-btn" style="background:rgba(231,76,60,0.2);color:#E74C3C" onclick="openDelete('${key}','${lic.branchId||''}')" title="Устгах">🗑</button>
+        </div>
+      </td>
+    </tr>`;
   }).join('');
-}
 
-/* ════ EDIT MODAL ════════════════════════════════════ */
-function openEdit(key){
-  const r=rows.find(x=>x.key===key);if(!r)return;
-  document.getElementById('eKey').value=key;
-  document.getElementById('eName').value=r.branchName||'';
-  document.getElementById('eOwner').value=r.ownerName||'';
-  document.getElementById('ePhone').value=r.phone||'';
-  document.getElementById('eSt').value=r.status||'paid';
-  document.getElementById('eEnd').value=new Date(r.endDate).toISOString().slice(0,10);
-  document.getElementById('eNote').value=r.note||'';
-  document.getElementById('editErr').style.display='none';
-  document.getElementById('editMdl').classList.add('show');
-}
-async function saveEdit(){
-  const key=document.getElementById('eKey').value;
-  const errEl=document.getElementById('editErr');
-  errEl.style.display='none';
-  try{
-    const endDate=new Date(document.getElementById('eEnd').value).getTime();
-    await db.ref('licenses/'+key).update({
-      branchName:document.getElementById('eName').value,
-      ownerName:document.getElementById('eOwner').value,
-      phone:document.getElementById('ePhone').value,
-      status:document.getElementById('eSt').value,
-      endDate,
-      note:document.getElementById('eNote').value,
+  con.innerHTML = `<table>
+    <thead><tr>
+      <th>Байршлын нэр</th>
+      <th>Лицензийн түлхүүр</th>
+      <th>Эзэмшигч / Утас</th>
+      <th>Статус</th>
+      <th>Дуусах огноо</th>
+      <th>Үйлдэл</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+};
+
+window.setFilter = function(f, btn) {
+  window._filter = f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderList();
+};
+
+window.copyText = async function(text) {
+  try{ await navigator.clipboard.writeText(text); showToast('Хуулагдлаа ✓'); }
+  catch{ prompt('Хуулах:', text); }
+};
+
+// ── Create ──
+window.createBranchAndLicense = async function() {
+  const name = document.getElementById('f-name').value.trim();
+  const owner = document.getElementById('f-owner').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  const plan = document.getElementById('f-plan').value;
+  const startStr = document.getElementById('f-start').value;
+  const endStr = document.getElementById('f-end').value;
+  const pin = document.getElementById('f-pin').value.trim();
+  const note = document.getElementById('f-note').value.trim();
+
+  const errEl = document.getElementById('create-err');
+  const sucEl = document.getElementById('create-success');
+  errEl.classList.add('hidden'); sucEl.classList.add('hidden');
+
+  if(!name) { errEl.textContent='Байршлын нэр оруулна уу'; errEl.classList.remove('hidden'); return; }
+  if(!pin || pin.length < 4) { errEl.textContent='Менежерийн PIN дор хаяж 4 тоо байх ёстой'; errEl.classList.remove('hidden'); return; }
+  if(!startStr || !endStr) { errEl.textContent='Огноо сонгоно уу'; errEl.classList.remove('hidden'); return; }
+
+  const btn = document.getElementById('create-btn');
+  btn.disabled = true; btn.textContent = '⏳ Үүсгэж байна...';
+
+  try {
+    const key = genKey();
+    const now = Date.now();
+    const expiresAt = new Date(endStr).getTime() + 86399999;
+    const status = PLAN_STATUS[plan] || 'trial';
+
+    // 1) Create branch
+    const branchRef = push(ref(db, 'branches'));
+    const branchId = branchRef.key;
+    await set(branchRef, {
+      name, address: '', managerPin: pin, licenseKey: key, createdAt: now
     });
-    closeModal('editMdl');
-  }catch(e){errEl.textContent='Алдаа: '+e.message;errEl.style.display='block';}
-}
-async function delItem(){
-  const key=document.getElementById('eKey').value;
-  const r=rows.find(x=>x.key===key);
-  if(!confirm(`"${r?.branchName||key}" байршлын лицензийг устгах уу?`))return;
-  await db.ref('licenses/'+key).remove();
-  closeModal('editMdl');
-}
 
-/* ════ EXTEND MODAL ════════════════════════════════════ */
-function openExtend(key){
-  const r=rows.find(x=>x.key===key);if(!r)return;
-  document.getElementById('extKey').value=key;
-  const d=dl(r.endDate);
-  document.getElementById('extInfo').textContent=`${r.branchName} — одоо ${d>0?d+' хоног үлдсэн':'дуусчихсан'}`;
-  document.getElementById('extMdl').classList.add('show');
-}
-async function doExtend(){
-  const key=document.getElementById('extKey').value;
-  const r=rows.find(x=>x.key===key);if(!r)return;
-  const days=parseInt(document.getElementById('extDays').value)||30;
-  const base=Math.max(r.endDate,Date.now());
-  const newEnd=base+days*86400000;
-  await db.ref('licenses/'+key).update({endDate:newEnd,status:'paid'});
-  closeModal('extMdl');
-}
+    // 2) Create license (linked to branch)
+    await set(ref(db, `licenses/${key}`), {
+      key, clientName: owner, phone, branchId,
+      status, plan, expiresAt, createdAt: now, note: note || ''
+    });
 
-/* ════ QUICK ACTIONS ════════════════════════════════ */
-async function cleanupBranches(){
-  const noLic=Object.values(brs).filter(b=>!b.lic);
-  if(!noLic.length){showToast('Лицензгүй салбар байхгүй байна');return;}
-  const names=noLic.map(b=>b.name||b.id).join(', ');
-  if(!confirm('Дараах '+noLic.length+' салбарыг устгах уу?\n\n'+names))return;
-  let ok=0;
-  for(const b of noLic){
-    try{await db.ref('branches/'+b.id).remove();delete brs[b.id];ok++;}catch(e){console.error(e);}
+    // Success
+    const loginUrl = `https://res-menu-ashy-two.vercel.app/?b=${branchId}`;
+    sucEl.innerHTML = `
+      <div style="background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.3);border-radius:10px;padding:1rem;text-align:left">
+        <p style="color:#2ECC71;font-weight:800;margin-bottom:0.5rem">✅ Амжилттай үүслээ!</p>
+        <div class="link-box"><b>Лицензийн түлхүүр</b>${key} <button class="copy-btn" onclick="copyText('${key}')" style="margin-left:0.4rem;font-size:0.8rem">📋</button></div>
+        <div class="link-box" style="margin-top:0.5rem"><b>Нэвтрэх линк</b>${loginUrl} <button class="copy-btn" onclick="copyText('${loginUrl}')" style="margin-left:0.4rem;font-size:0.8rem">📋</button></div>
+        <div class="link-box" style="margin-top:0.5rem"><b>Менежерийн PIN</b>${pin}</div>
+      </div>`;
+    sucEl.classList.remove('hidden');
+
+    // Reset form
+    document.getElementById('f-name').value='';
+    document.getElementById('f-owner').value='';
+    document.getElementById('f-phone').value='';
+    document.getElementById('f-pin').value='';
+    document.getElementById('f-note').value='';
+    document.getElementById('f-plan').value='trial_14';
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('f-start').value = today;
+    calcEnd();
+
+  } catch(e) {
+    errEl.textContent = 'Алдаа: ' + e.message;
+    errEl.classList.remove('hidden');
   }
-  renderBrs();fillBrSel();
-  showToast('✅ '+ok+' салбар устгагдлаа');
+  btn.disabled = false; btn.textContent = '✅ Байршил + Лиценз үүсгэх';
+};
+
+// ── Edit ──
+window.openEdit = function(key) {
+  const lic = window._licenses[key];
+  if(!lic) return;
+  window._editKey = key;
+
+  const branch = lic.branchId && window._branches[lic.branchId];
+  document.getElementById('e-name').value = branch?.name || lic.clientName || '';
+  document.getElementById('e-owner').value = lic.clientName || '';
+  document.getElementById('e-phone').value = lic.phone || '';
+  document.getElementById('e-status').value = lic.status || 'trial';
+  const exp = lic.expiresAt || lic.endDate;
+  document.getElementById('e-end').value = exp ? new Date(exp).toISOString().split('T')[0] : '';
+  document.getElementById('e-note').value = lic.note || '';
+  document.getElementById('e-pin').value = '';
+  document.getElementById('edit-err').classList.add('hidden');
+  document.getElementById('edit-modal').classList.remove('hidden');
+};
+
+window.saveEdit = async function() {
+  const key = window._editKey; if(!key) return;
+  const lic = window._licenses[key]; if(!lic) return;
+
+  const status = document.getElementById('e-status').value;
+  const endStr = document.getElementById('e-end').value;
+  const owner = document.getElementById('e-owner').value.trim();
+  const phone = document.getElementById('e-phone').value.trim();
+  const note = document.getElementById('e-note').value.trim();
+  const pin = document.getElementById('e-pin').value.trim();
+  const name = document.getElementById('e-name').value.trim();
+
+  const btn = document.getElementById('save-edit-btn');
+  btn.disabled=true; btn.textContent='⏳...';
+  try {
+    const updates = { status, clientName: owner, phone, note };
+    if(endStr) updates.expiresAt = new Date(endStr).getTime() + 86399999;
+    await update(ref(db, `licenses/${key}`), updates);
+    if(lic.branchId) {
+      const bUpdates = {};
+      if(name) bUpdates.name = name;
+      if(pin && pin.length >= 4) bUpdates.managerPin = pin;
+      if(Object.keys(bUpdates).length) await update(ref(db, `branches/${lic.branchId}`), bUpdates);
+    }
+    closeModal('edit-modal');
+  } catch(e) {
+    const errEl = document.getElementById('edit-err');
+    errEl.textContent = 'Алдаа: '+e.message; errEl.classList.remove('hidden');
+  }
+  btn.disabled=false; btn.textContent='✅ Хадгалах';
+};
+
+// ── Block/Unblock ──
+window.toggleBlock = async function(key) {
+  const lic = window._licenses[key]; if(!lic) return;
+  const cur = getEffectiveStatus(lic);
+  const newStatus = cur === 'blocked' ? (daysLeft(lic.expiresAt||lic.endDate||0)>0?'trial':'expired') : 'blocked';
+  await update(ref(db, `licenses/${key}`), {status: newStatus});
+};
+
+// ── Delete ──
+window.openDelete = function(key, branchId) {
+  window._deleteKey = key;
+  window._deleteBranchId = branchId;
+  document.getElementById('del-modal').classList.remove('hidden');
+};
+window.confirmDelete = async function() {
+  const key = window._deleteKey; const bid = window._deleteBranchId;
+  const btn = document.getElementById('del-btn');
+  btn.disabled=true; btn.textContent='⏳...';
+  try {
+    if(key) await remove(ref(db, `licenses/${key}`));
+    if(bid) await remove(ref(db, `branches/${bid}`));
+    closeModal('del-modal');
+  } catch(e) { alert('Алдаа: '+e.message); }
+  btn.disabled=false; btn.textContent='Устгах';
+};
+
+window.closeModal = function(id) {
+  document.getElementById(id).classList.add('hidden');
+};
+
+// ── Toast ──
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#2ECC71;color:#000;padding:0.5rem 1.25rem;border-radius:20px;font-weight:700;font-size:0.82rem;z-index:999;pointer-events:none;opacity:1;transition:opacity 0.4s';
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),400);}, 2000);
 }
-async function deleteBranch(bid,name){
-  if(!confirm('"'+name+'" салбарыг Firebase-с БҮРЭН устгах уу?\n\n⚠️ Цэс, захиалга, бүх мэдээлэл устана.'))return;
-  try{
-    await db.ref('branches/'+bid).remove();
-    // Also remove license link if exists
-    const lic=brs[bid]?.lic;
-    if(lic)await db.ref('licenses/'+lic+'/branchId').remove();
-    delete brs[bid];
-    renderBrs();fillBrSel();
-    showToast('🗑 '+name+' устгагдлаа');
-  }catch(e){alert('Устгах алдаа: '+e.message);}
-}
-function quickBlock(key){if(!confirm('Энэ байршлыг хаах уу?'))return;db.ref('licenses/'+key).update({status:'blocked'});}
-function quickDelete(key,name,btn){
-  if(!confirm('"'+name+'" лицензийг устгах уу?\n\nЭнэ үйлдлийг буцааж болохгүй.'))return;
-  btn.disabled=true;btn.textContent='⏳';
-  db.ref('licenses/'+key).remove().then(()=>{
-    rows=rows.filter(r=>r.key!==key);
-    updateStats();render();
-    showToast('🗑 Устгагдлаа: '+name);
-  }).catch(e=>alert('Устгах алдаа: '+e.message));
-}
-function quickUnblock(key){db.ref('licenses/'+key).update({status:'paid'});}
-function copyKey(key){navigator.clipboard.writeText(key).then(()=>alert('Хуулагдлаа ✓\n'+key));}
 
-/* ════ MODAL HELPERS ════════════════════════════════ */
-function closeModal(id){document.getElementById(id).classList.remove('show');}
-document.addEventListener('click',e=>{if(e.target.classList.contains('mbg'))e.target.classList.remove('show');});
-
-/* ════ INIT FILTERS ════════════════════════════════ */
-document.addEventListener('DOMContentLoaded',buildFilters);
-
-
+// Keyboard gate enter
+document.getElementById('gatePin').addEventListener('keydown', e=>{ if(e.key==='Enter') window.checkGate(); });
 </script>
-
-
 </body>
 </html>
