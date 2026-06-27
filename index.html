@@ -179,7 +179,8 @@ td{padding:0.65rem 0.875rem;border-bottom:1px solid rgba(255,255,255,0.05)}
         <div class="full">
           <label class="lbl">Үндсэн лиценцийн код *</label>
           <div style="display:flex;gap:0.5rem">
-            <input id="sub-lic" placeholder="RES-XXXX-XXXX" style="font-family:monospace;letter-spacing:0.08em;flex:1" oninput="this.value=this.value.toUpperCase()"/>
+            <input id="sub-lic" placeholder="RES-XXXX-XXXX" style="font-family:monospace;letter-spacing:0.08em;flex:1"
+              oninput="this.value=this.value.toUpperCase();window._subLicInfo=null;document.getElementById('sub-lic-info').textContent='';document.getElementById('sub-lic-info').style.color='rgba(255,255,255,0.45)'"/>
             <button class="btn btn-gray" onclick="loadSubBranchInfo()" style="flex-shrink:0;padding:0 1rem">Шалгах</button>
           </div>
           <div id="sub-lic-info" style="margin-top:0.4rem;font-size:0.75rem;color:rgba(255,255,255,0.45)"></div>
