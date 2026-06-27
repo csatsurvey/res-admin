@@ -434,17 +434,31 @@ window.renderList = function() {
     return;
   }
 
-  const rows = entries.map(({key,lic,status,name})=>{
+  const allRows = [];
+
+  entries.forEach(({key,lic,status,name}) => {
     const dl = daysLeft(lic.expiresAt||lic.endDate||0);
     const dlClass = dl>14?'days-ok':dl>7?'days-warn':'days-dead';
-    const expDate = lic.expiresAt ? new Date(lic.expiresAt).toLocaleDateString('mn-MN') : 
+    const expDate = lic.expiresAt ? new Date(lic.expiresAt).toLocaleDateString('mn-MN') :
                    lic.endDate ? new Date(lic.endDate).toLocaleDateString('mn-MN') : '—';
     const loginUrl = `https://res-menu-ashy-two.vercel.app/?b=${lic.branchId||''}`;
 
-    return `<tr>
+    // Find sub-branches: branches with same licenseKey but NOT the main branchId
+    const subBranches = Object.entries(window._branches)
+      .filter(([id, b]) => b.licenseKey === key && id !== lic.branchId)
+      .map(([id, b]) => ({id, ...b}));
+
+    // Main (parent) branch row
+    allRows.push(`<tr style="background:rgba(255,255,255,0.02)">
       <td>
-        <div class="branch-name">${name}</div>
-        <div style="font-size:0.7rem;color:rgba(255,255,255,0.35);margin-top:0.1rem">${lic.branchId?`ID: ${lic.branchId.slice(0,12)}...`:''}</div>
+        <div style="display:flex;align-items:center;gap:0.4rem">
+          <span style="font-size:0.7rem;color:rgba(255,255,255,0.35)">📍</span>
+          <div>
+            <div class="branch-name">${name}</div>
+            <div style="font-size:0.68rem;color:rgba(255,255,255,0.3);margin-top:0.1rem">Үндсэн · ${lic.branchId?`ID: ${lic.branchId.slice(0,10)}...`:''}</div>
+          </div>
+        </div>
+        ${subBranches.length>0?`<div style="margin-top:0.3rem;font-size:0.68rem;color:rgba(59,130,246,0.7);font-weight:600">${subBranches.length} дэд салбартай</div>`:''}
       </td>
       <td>
         <span class="lic-key">${key}
@@ -468,8 +482,47 @@ window.renderList = function() {
           <button class="icon-btn" style="background:rgba(231,76,60,0.2);color:#E74C3C" onclick="openDelete('${key}','${lic.branchId||''}')" title="Устгах">🗑</button>
         </div>
       </td>
-    </tr>`;
-  }).join('');
+    </tr>`);
+
+    // Sub-branch rows (indented)
+    subBranches.forEach(sub => {
+      const subLoginUrl = `https://res-menu-ashy-two.vercel.app/?b=${sub.id}`;
+      allRows.push(`<tr style="background:rgba(59,130,246,0.04)">
+        <td style="border-left:2px solid rgba(59,130,246,0.35);padding-left:1.5rem">
+          <div style="display:flex;align-items:center;gap:0.4rem">
+            <span style="color:rgba(59,130,246,0.5);font-size:0.85rem;flex-shrink:0">↳</span>
+            <div>
+              <div style="color:rgba(255,255,255,0.8);font-weight:700;font-size:0.85rem">${sub.name}</div>
+              <div style="font-size:0.65rem;color:rgba(255,255,255,0.3)">Дэд салбар · ID: ${sub.id.slice(0,10)}...</div>
+            </div>
+          </div>
+        </td>
+        <td>
+          <span style="font-family:monospace;font-size:0.7rem;color:rgba(245,193,32,0.5)">${key}</span>
+          <div style="font-size:0.62rem;color:rgba(255,255,255,0.3)">хуваалцсан лиценц</div>
+        </td>
+        <td><div style="color:rgba(255,255,255,0.4);font-size:0.78rem">—</div></td>
+        <td>${getBadge(status)}</td>
+        <td>
+          <div style="font-size:0.78rem;color:rgba(255,255,255,0.5)">${expDate}</div>
+          <div class="${dlClass} days-left" style="font-size:0.68rem">${dl>0?dl+' хоног':'Дууссан'}</div>
+        </td>
+        <td>
+          <div class="action-btns">
+            <button class="icon-btn" style="background:rgba(59,130,246,0.2);color:#60a5fa" onclick="copyText('${subLoginUrl}')" title="Нэвтрэх линк хуулах">🔗</button>
+            <button class="icon-btn" style="background:rgba(231,76,60,0.2);color:#E74C3C" onclick="openDeleteSubBranch('${sub.id}')" title="Устгах">🗑</button>
+          </div>
+        </td>
+      </tr>`);
+    });
+  });
+
+  // Count including sub-branches
+  const totalBranches = entries.reduce((n, e) => {
+    const subs = Object.entries(window._branches).filter(([id,b])=>b.licenseKey===e.key&&id!==e.lic.branchId).length;
+    return n + 1 + subs;
+  }, 0);
+  document.getElementById('count-label').textContent = `Firebase: ${Object.keys(window._licenses).length} лиценц · ${totalBranches} байршил`;
 
   con.innerHTML = `<table>
     <thead><tr>
@@ -480,7 +533,7 @@ window.renderList = function() {
       <th>Дуусах огноо</th>
       <th>Үйлдэл</th>
     </tr></thead>
-    <tbody>${rows}</tbody>
+    <tbody>${allRows.join('')}</tbody>
   </table>`;
 };
 
@@ -628,6 +681,12 @@ window.toggleBlock = async function(key) {
 // ── Delete ──
 window.openDelete = function(key, branchId) {
   window._deleteKey = key;
+  window._deleteBranchId = branchId;
+  document.getElementById('del-modal').classList.remove('hidden');
+};
+// Delete sub-branch only (no license entry to delete)
+window.openDeleteSubBranch = function(branchId) {
+  window._deleteKey = null;
   window._deleteBranchId = branchId;
   document.getElementById('del-modal').classList.remove('hidden');
 };
